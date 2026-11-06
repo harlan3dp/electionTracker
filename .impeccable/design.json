@@ -66,7 +66,7 @@
       "source": "Natural Earth 1:50m Admin 0 Countries",
       "license": "Public domain",
       "asset": "src/data/nz-coastline.json",
-      "projection": "Shared local equirectangular projection adjusted for 41\u00b0S",
+      "projection": "Shared local equirectangular projection adjusted for 41°S",
       "extent": "Main islands; offshore islands omitted",
       "markers": "Approximate city locations, not electorate centroids or boundaries",
       "labels": "Selected labels persist; other labels appear on hover or focus."
@@ -93,7 +93,7 @@
       "kind": "input",
       "refersTo": "field",
       "description": "Labelled electorate search.",
-      "html": "<label class=\"ds-field\">Find an electorate<input type=\"search\" placeholder=\"Try Auckland or Whang\u0101rei\"></label>",
+      "html": "<label class=\"ds-field\">Find an electorate<input type=\"search\" placeholder=\"Try Auckland or Whangārei\"></label>",
       "css": ".ds-field{display:block;color:#18352f;font:600 12px Inter,system-ui,sans-serif}.ds-field input{display:block;width:100%;min-height:44px;margin-top:8px;padding:12px;border:1px solid #a8b7aa;border-radius:8px;background:white;color:#18352f;font:inherit}.ds-field input::placeholder{color:#59695e}.ds-field input:focus-visible{outline:3px solid #2869ba;outline-offset:4px}"
     },
     {
@@ -145,5 +145,35 @@
       "Don't describe demo leaders as winners, scenarios as forecasts, or user groupings as agreements.",
       "Don't invent live reporting progress, timestamps, polls or predictive certainty."
     ]
+  },
+  "hub": {
+    "views": [
+      "Results",
+      "Electorates",
+      "Parties",
+      "Coalitions",
+      "Analysis",
+      "Sources"
+    ],
+    "navigation": {
+      "desktop": "inline",
+      "mobile": "3x2 grid"
+    },
+    "resultsDefault": "unavailable",
+    "demo": "explicit opt-in; fictional figures only",
+    "references": {
+      "maoriElectorates": 7,
+      "generalElectorates": 11,
+      "historicalPartyNames": 17,
+      "status": "historical editorial references; current status unverified"
+    },
+    "teTaiTonga": {
+      "islands": [
+        "North Island",
+        "South Island"
+      ],
+      "marker": "indicative South Island anchor, not boundary"
+    },
+    "coalitionPresets": "three hypothetical groupings; not political agreements"
   }
 }
