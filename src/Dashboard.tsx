@@ -1,10 +1,10 @@
+'use client'
+
 import React from 'react'
-import { createRoot } from 'react-dom/client'
 import { Hub } from './Hub'
 import { TallyMark } from './Icons'
-import './styles.css'
 
-function App() {
+export function Dashboard() {
   return <>
     <a className="skip-link" href="#main">Skip to dashboard</a>
     <header className="site-header"><div className="shell flex items-center justify-between gap-4">
@@ -16,4 +16,3 @@ function App() {
     </main>
   </>
 }
-createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>)

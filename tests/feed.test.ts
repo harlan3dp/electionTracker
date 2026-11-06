@@ -1,9 +1,9 @@
 import { describe,it,expect,vi } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { normalize,normalizeElectorate,RELEASE,timestamp } from '../functions/_lib/normalize'
-import { getNational,getElectorate } from '../functions/_lib/feed'
-import type { XmlFiles } from '../functions/_lib/normalize'
-import type { FeedCache } from '../functions/_lib/feed'
+import { normalize,normalizeElectorate,RELEASE,timestamp } from '../lib/results/normalize'
+import { getNational,getElectorate } from '../lib/results/feed'
+import type { XmlFiles } from '../lib/results/normalize'
+import type { FeedCache } from '../lib/results/feed'
 const fixture=(name:string)=>readFileSync(new URL(`./fixtures/official-feed/${name}.xml`,import.meta.url),'utf8')
 const files:XmlFiles={election:fixture('election'),statistics:fixture('statistics'),parties:fixture('parties'),electorates:fixture('electorates'),candidates:fixture('candidates')}
 const now=Date.parse('2026-11-06T18:00:00+13:00')

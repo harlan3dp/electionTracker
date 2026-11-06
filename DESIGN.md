@@ -136,3 +136,7 @@ Show three hypothetical coalition presets with the same seat allocation as the c
 ## Official feed states
 
 Default Results, Parties, Electorates and descriptive Analysis use a shared validated media-feed snapshot. Distinguish loading, connected/waiting, withheld, preliminary, stale and unavailable. Always show source timestamps in NZ time and a route to the official site. Missing counts use “not published” or a dash, never zero support. Show candidate leads only from positive counts; never label elected winners from a feed final flag. Source directories replace historical transcriptions in normal mode; scenarios and opt-in fictional views stay clearly separate. Map anchor coverage is partial even when source list coverage is complete.
+
+## Next.js national dashboard
+
+The national view uses an editorial serif headline above three source metrics and a party-vote panel. Desktop pairs this with an official-source panel and explicit seat availability; mobile stacks the panels. No decorative chart may imply missing votes or projected seats. Use dashes and waiting/unavailable copy before verified counts exist. Party bars animate on updates and respect reduced motion. Keep retrieval and source timestamps visible below the data.
