@@ -175,5 +175,22 @@
       "marker": "indicative South Island anchor, not boundary"
     },
     "coalitionPresets": "three hypothetical groupings; not political agreements"
+  },
+  "officialFeed": {
+    "states": [
+      "loading",
+      "waiting",
+      "withheld",
+      "preliminary",
+      "stale",
+      "unavailable"
+    ],
+    "cadenceSeconds": 60,
+    "timezone": "Pacific/Auckland",
+    "directories": "source-provided, dynamically validated",
+    "scenarios": "always fictional and separate",
+    "missingCounts": "not published, never zero support",
+    "winnerDeclarations": false,
+    "mapCoverage": "partial anchors; complete source text list"
   }
 }

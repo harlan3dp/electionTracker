@@ -1,6 +1,6 @@
 # NZ Election Tracker
 
-Independent React/TypeScript/Vite/Tailwind dashboard, deployed with Cloudflare Pages and Pages Functions. **No verified live results are connected.** Results default to an honest unavailable state; invented vote totals are opt-in.
+Independent React/TypeScript/Vite/Tailwind dashboard, deployed with Cloudflare Pages and Pages Functions. **The official media XML feed is connected.** The observed source currently contains zero counted votes, so results show an awaiting-counts state. Nonzero publication is separately gated; invented figures remain opt-in and separate.
 
 ## Development
 
@@ -15,24 +15,46 @@ npm run build
 npm run preview
 ```
 
-Vite serves port 5173; it does not execute Pages Functions. The `/api/status` handler deliberately reports live results as unavailable and is exercised by unit tests. For a local Pages runtime, build and run `npx wrangler pages dev dist` (requires a separate Wrangler installation/download). No API keys or environment variables are required for the bundled interface.
+Vite serves port 5173 and runs the same `/api/results` and selected-electorate handlers through a development-only middleware. Cloudflare Pages serves those handlers from `functions/` in production. `/api/status` is a legacy redirect to `/api/results`. No API key is needed for the public feed.
+
+In this proxy-based cloud environment use `npm run dev:proxy` (Node’s `NODE_USE_ENV_PROXY=1`, with inherited CA trust intact). On an ordinary computer, `npm run dev` suffices. Wrangler is included for `npm run dev:pages` and `npm run build:functions`. The standalone local workerd runtime does not inherit this sandbox’s outbound proxy, so it can return 503 here; this is not a successful deployed-network check. The Vite development API and live isolate test below explicitly support the inherited proxy.
+
+```sh
+npm run test:runtime  # captured source fixtures; verifies the compiled Cloudflare isolate and cache
+NODE_USE_ENV_PROXY=1 node scripts/feed-runtime.cjs --live  # after build:functions; real source
+```
+
+The runtime test uses Miniflare’s supported outbound-service bridge to preserve proxy/TLS routing for this environment. It is test-only and not deployed. CI runs fixture tests, TypeScript, Vite build and the offline isolate test. Neither a local build nor this bridge proves a public deployment.
 
 ## Navigation and data boundaries
 
-- **Results:** no fictional votes by default. Explicit demo toggle reveals fictional party votes.
-- **Electorates:** 11 general reference entries and seven named Māori electorate references from the 2023 roster. Search is macron-insensitive; separate General/Māori/Both roll controls avoid implying non-overlapping boundaries. Te Tai Tonga spans both islands. The island filter includes Te Tai Tonga in both islands; its map anchor remains in the South Island.
-- **Parties:** 17 names from an editorial historical 2023 party-vote reference. This is not a verified current party register or full list of 2026 candidates. Scenario selectors include every reference name; added parties have zero fictional baseline votes, which makes no claim about real support.
+- **Results:** validated source counts or waiting/withheld/unavailable/stale states. Explicit demo toggle reveals fictional party votes.
+- **Electorates:** all 71 source electorates, including seven Māori electorates, with source candidate names/affiliations and on-demand counts. The search is macron-insensitive. Map markers only cover matched reference anchors; the text list gives complete source coverage. Māori/general geography overlaps and Te Tai Tonga spans both islands. Fictional demo mode retains the older reference explorer, separate from source counts.
+- **Parties:** 36 entries from the source feed, including 17 marked registered in the observed capture. These source counts can change. Registration flags are displayed as supplied. Coalition and target-share tools retain their separate historical/demo party choices and never silently substitute source counts.
 - **Coalitions:** three hypothetical presets, a chamber illustration, and custom grouping controls. These do not imply political agreements or likely governments.
-- **Analysis:** current analysis is unavailable. Opt-in demo analysis computes the fictional party-vote margin and simplified seats. A target-share calculator supports every listed party.
+- **Analysis:** descriptive margins from validated preliminary party counts, or an honest waiting/withheld state. No source-derived seat forecasts or win probabilities. Opt-in fictional analysis and target-share calculators remain separate.
 - **Sources:** source destinations, data limitations, and verification status. Names of 2023 elected representatives are manually entered historical references, explicitly not current MP or 2026 candidate claims. Source rechecks are pending; later by-elections, vacancies, deaths and affiliation changes are not reflected.
 
 Routes use hashes and support browser back/forward. Navigation retains the state of each view during a session. Demo mode is shared by Results, Electorates and Analysis, resets on a full reload, and remains explicitly labelled. Coalition calculators always use fictional data, regardless of the Results toggle.
 
-## Official data verification status
+## Official feed connection and activation
 
-Initial source checks were blocked by the former restricted network policy. After environment publication on 6 November 2026, the runtime reports enforced unrestricted networking. The official results homepage and the media XML directory now return HTTP 200. The XML directory is an HTML index, not a validated result payload. The homepage links historical results through `https://archive.electionresults.govt.nz/electionresults_2023/`; the old www-hosted historical path returns 404 and has been corrected in the reference source link.
+Source: `https://media.election.net.nz/xml/`. The official source homepage identifies the 2026 election and says preliminary results begin at 7pm NZ time on 7 November 2026. The observed XML does **not** contain an explicit election-year/test identifier. As of the captured 6 November source timestamp, counts are zero. An electorate `final="true"` flag appears even with zero counts, so it is never interpreted as certification or a winner declaration.
 
-Network access does not establish feed permission, current data validity or a completed adapter. Verify permissions and the actual feed schema, import the full 2026 party register, electorate roster and candidates, and distinguish current MPs from nominees. Do not replace the unavailable result state until those checks succeed. Historical reference transcriptions also require independent source checks before reliance. No poll observations or historical vote totals are loaded.
+- `/api/results` reads `election.xml`, `statistics.xml`, `parties.xml`, `electorates.xml` and `candidates.xml`.
+- `/api/electorates/:id` reads the selected `eNN/eNN.xml` only, after validating the ID against the source directory. No arbitrary upstream URL is accepted.
+- XML is validated before parsing; DTD/entities, oversized bodies, redirects, invalid IDs, duplicate or broken references, impossible dates, negative/nonfinite counts, directory-count mismatches and inconsistent percentages are rejected. Party ID 0 is kept as “No party listed in source”; list-only candidates are not shown as electorate candidates.
+- Source times are explicitly interpreted as NZDT within the supported November–December 2026 window. Other windows fail closed instead of guessing DST/year.
+- The browser refreshes every 60 seconds while visible, aborts requests after 12 seconds and offers retry. Edge snapshots refresh at most once per minute per cache location/key, coalescing concurrent reads in an isolate. HTTP/browser caching is shorter. A validated snapshot can be retained for at most ten minutes after a failed refresh, clearly stale; thereafter results are unavailable. Cache eviction or another edge location can require another upstream read; there is no global distributed rate limiter or database.
+- Nonzero source updates older than ten minutes are labelled stale. Directory/waiting snapshots retain explicit source timestamps rather than implying zero support. Different publication settings use separate cache keys.
+
+**Production publication prerequisite:** verify Electoral Commission feed-use permission/terms, 2026 identity, that rehearsal/test data has ended, and election-day publishing requirements. Then set the non-secret Cloudflare Pages production variable `RESULTS_PUBLICATION_CONFIRMED=2026-preliminary` and redeploy. Leave it unset for previews or until review is complete. This is a manual source-confirmation guard, not proof supplied by the feed.
+
+Even with that setting, nonzero counts are withheld before `2026-11-07T19:00:00+13:00` or when the source update precedes that release time. Zero snapshots remain waiting. Both national and electorate APIs enforce this. Counts are always labelled preliminary; a future official-results adapter requires separate verification. Source seat fields and `final` flags are not used to declare winners or infer governments.
+
+Live verification performed in the cloud machine: national API plus Auckland Central and Te Tai Tonga returned validated waiting states. The observed directory had 71 electorates, 530 candidates and 36 party entries (17 registered). Browser checks covered real-source metadata at phone, tablet and desktop widths. Nonzero, withheld, invalid, failure and stale cases use explicitly synthetic test mutations, not real election results. Public deployment and production nonzero-data behaviour remain unverified.
+
+Historical references link to `https://archive.electionresults.govt.nz/electionresults_2023/`. No poll observations or historical vote totals are loaded.
 
 ## Map provenance
 
