@@ -16,7 +16,7 @@ try {
   }
   assert.ok(root?.ok, output)
   const html = await root.text()
-  assert.match(html, /New Zealand, vote by vote/)
+  assert.match(html, /The count/)
   assert.match(html, /Waiting|Connecting|Getting the latest/)
   const invalid = await fetch(`${base}/api/electorates/0`)
   assert.equal(invalid.status, 400)

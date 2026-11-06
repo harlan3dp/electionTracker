@@ -15,7 +15,7 @@ export function validSnapshot(v:unknown):v is Snapshot {
   if(!Array.isArray(v.candidates)||!v.candidates.every(c=>object(c)&&str(c.id)&&str(c.name)&&str(c.partyId)&&(c.electorateId===null||str(c.electorateId))))return false
   return v.status==='preliminary' ? Array.isArray(v.results)&&v.results.length>0&&v.results.every(p=>object(p)&&str(p.partyId)&&num(p.votes)&&Number.isSafeInteger(p.votes)&&num(p.percentage)&&p.percentage<=100&&v.parties instanceof Array&&v.parties.some(d=>d.id===p.partyId)) : v.results===null
 }
-function validElectorate(v:unknown,id:string):v is ElectorateSnapshot {
+export function validElectorate(v:unknown,id:string):v is ElectorateSnapshot {
   return object(v)&&v.schemaVersion===1&&v.electorateId===id&&v.source===`${OFFICIAL_SOURCE}e${id.padStart(2,'0')}/e${id.padStart(2,'0')}.xml`&&date(v.fetchedAt)&&date(v.updatedAt)&&stages.includes(String(v.status))&&typeof v.stale==='boolean'&&str(v.message)&&reporting(v.reporting)&&(v.status==='preliminary'?Array.isArray(v.candidates)&&v.candidates.every(c=>object(c)&&str(c.candidateId)&&num(c.votes)&&Number.isSafeInteger(c.votes)):v.candidates===null)
 }
 export type FeedState<T> = { data:T|null; loading:boolean; error:string|null; refresh:()=>void }
