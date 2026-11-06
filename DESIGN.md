@@ -120,3 +120,13 @@ Offer every demo party in both tools. Keep each tool's party choice independent,
 - **Don't** imply that approximate markers are electorate boundaries.
 - **Don't** describe demo leaders as winners, scenarios as forecasts, or user groupings as agreements.
 - **Don't** invent live reporting progress, timestamps, polls or predictive certainty.
+
+## Election hub navigation and provenance
+
+Use six hash-based views: Results, Electorates, Parties, Coalitions, Analysis and Sources. Preserve each view’s form state while switching; support browser back/forward. On phones, display all six navigation links in a 3×2 grid; use an inline row on desktop.
+
+Results default to unavailable. Fictional figures require explicit opt-in, shared across Results, electorate demo votes and analysis insights. Coalition tools always use fictional votes. Keep provenance visible in every view; never imply that unverified historical names establish current MPs, candidates or party registration.
+
+The directory contains seven Māori and eleven general historical reference entries. Separate general, Māori and combined layers. Te Tai Tonga belongs in both island filters, with one indicative South Island map anchor; markers are not boundaries. The 17 historical party names remain an unverified 2023 reference rather than a complete current register.
+
+Show three hypothetical coalition presets with the same seat allocation as the chamber. Keep source confidence, model assumptions and missing data accessible in Sources and Analysis. Preserve explicit no-data, no-match and reset states.
