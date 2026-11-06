@@ -1,7 +1,7 @@
 # NZ Election Tracker
 
 Independent dashboard for the 7 November 2026 New Zealand General Election.
-**Stage 1: demonstration foundation. No live election results are connected.**
+**Stage 2: demonstration dashboard and interactive scenario tools. No live election results are connected.**
 
 ## Local development
 
@@ -12,7 +12,7 @@ npm ci
 npm run dev
 ```
 
-Vite serves the UI on port 5173. The dashboard deliberately uses fictional figures, visibly labelled throughout. Electorate search, refresh, and feed integration are future stages. No API keys or environment variables are required.
+Vite serves the UI on port 5173. The dashboard deliberately uses fictional figures, visibly labelled throughout. Electorate search covers an illustrative subset with synthetic candidates. Refresh and feed integration are future stages. No API keys or environment variables are required.
 
 ```sh
 npm test
@@ -42,8 +42,27 @@ The repository was initially empty, with no `main` branch. A maintainer must ini
 
 ## Remaining stages
 
-- Stage 2: electorate search and results, further responsive/accessibility testing.
+- Stage 2 implemented: searchable demo electorate subset, region filters, geographic schematic, candidate leaders, a Parliament scenario and remaining-vote target calculator. Official electorate boundaries, complete 2026 roster and real candidates still need verified sources. The schematic deliberately makes no boundary claims.
 - Stage 3: verify access, permissions, real XML format, and update cadence for `http://media.election.net.nz/xml/`; implement a validated, cached Pages Functions adapter, refresh and loading/stale/unavailable states. No feed claims have been verified yet.
 - Stage 4: mobile/desktop testing, election data accuracy, failure testing, deployment verification, and confirmation of applicable election-day publishing requirements before public release.
 
 Official results: https://www.electionresults.govt.nz/
+
+## Analysis and visualisation scope
+
+The geographic selector uses approximate locations for 11 demonstration electorates, not official polygons or a complete 2026 map. Colours identify fictional leading parties; selection also works through the text list. All candidates and votes are synthetic. No winners are declared.
+
+The Parliament graphic allocates a fixed 120 seats with Sainte-Laguë divisors (1, 3, 5…). It assumes every listed party is eligible and omits electorate seats, qualification rules, overhangs and other official allocation rules. Ties use display order. Changing Labour’s share scales other demo parties proportionally. Coalition checkboxes express user scenarios, not political agreements. This is not a projected election result.
+
+The remaining-vote calculator solves `(target - current * countedFraction) / remainingFraction`. It assumes a known fixed final party-vote total. Reporting-place percentages are not interchangeable with that fraction. A Labour vote-share target is not a threshold to win or form a government.
+
+Before adding in-depth forecasts:
+
+1. Verify official 2026 electorate boundaries, roster, candidate lists, reuse permissions and provenance; include Māori electorates and handle overlapping geography.
+2. Ingest verified historical results with boundary crosswalks. Do not compare changed boundaries as though electorates were unchanged.
+3. Record poll publisher, fieldwork dates, sample, methodology, uncertainty and reuse rights; distinguish polls from counted votes.
+4. Model reporting order and special votes, implement complete MMP eligibility and seat rules, and backtest before publishing projections. Publish assumptions, source timestamps, model version and uncertainty.
+5. Define “win” explicitly: most party votes, most seats, or parliamentary support to form a government. Do not infer agreements from a user-selected grouping.
+6. Review election-day publishing requirements before public release, particularly poll and predictive material.
+
+No live forecasts, historical comparisons or poll estimates are currently produced.
