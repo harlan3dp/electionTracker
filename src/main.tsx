@@ -11,7 +11,7 @@ function App() {
       <span className="edition">GENERAL ELECTION <strong>2026</strong></span>
     </div></header>
     <main id="main" tabIndex={-1} className="shell"><Hub/>
-      <footer><p><strong>Election Tracker</strong> · An independent project.</p><p>No live results · Historical references unverified · <a href="#sources">Sources & limitations</a></p></footer>
+      <footer><p><strong>Election Tracker</strong> · An independent project.</p><p>Source counts are preliminary · Scenarios are fictional · <a href="#sources">Sources & limitations</a></p></footer>
     </main>
   </>
 }

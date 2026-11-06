@@ -8,21 +8,30 @@
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:functions": "wrangler pages functions build --outdir .wrangler/functions",
+    "dev:pages": "npm run build && wrangler pages dev dist",
+    "dev:proxy": "NODE_USE_ENV_PROXY=1 vite --host 0.0.0.0",
+    "test:runtime": "npm run build:functions && node scripts/feed-runtime.cjs"
   },
   "dependencies": {
+    "fast-xml-parser": "^5.12.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.0",
+    "@types/node": "^24.19.2",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.1.0",
     "tailwindcss": "^4.1.0",
     "typescript": "~5.9.3",
     "vite": "^7.2.0",
-    "vitest": "^3.2.0"
+    "vitest": "^3.2.0",
+    "wrangler": "^4.158.0"
   },
-  "engines": { "node": ">=22.12.0" }
+  "engines": {
+    "node": ">=22.12.0"
+  }
 }

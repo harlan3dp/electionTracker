@@ -1,7 +1,4 @@
-// Deliberately returns no election figures until an official feed is verified.
+// Legacy callers should receive the same validated data/state as the dashboard.
 export function onRequestGet() {
-  return Response.json(
-    { mode: 'unavailable', message: 'Live results are not connected.', officialResultsUrl: 'https://www.electionresults.govt.nz/' },
-    { headers: { 'Cache-Control': 'public, max-age=60' } },
-  )
+  return new Response(null,{status:307,headers:{Location:'/api/results','Cache-Control':'no-store'}})
 }
