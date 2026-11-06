@@ -9,9 +9,12 @@ import { OfficialParties, OfficialElectorates, OfficialInsights } from './result
 import { LiveOverview } from './results/LiveOverview'
 import type { NationalState } from './results/Official'
 import { coalitionPresets, historicalSource } from './reference'
+import { Icon } from './Icons'
+import type { IconName } from './Icons'
 
 export const views = ['Results', 'Electorates', 'Parties', 'Coalitions', 'Analysis', 'Sources'] as const
 export type View = typeof views[number]
+const viewIcons: Record<View, IconName> = { Results: 'results', Electorates: 'electorates', Parties: 'parties', Coalitions: 'coalitions', Analysis: 'analysis', Sources: 'sources' }
 const readView = (): View => views.find(view => view.toLowerCase() === window.location.hash.slice(1)) ?? 'Results'
 
 function SourceLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -55,11 +58,11 @@ export function Hub() {
     window.addEventListener('hashchange',change)
     return () => window.removeEventListener('hashchange',change)
   },[])
-  useEffect(() => { document.title = `${view} · NZ Election Tracker` },[view])
+  useEffect(() => { document.title = `${view} · Tally` },[view])
   return <>
-    <nav className="hub-nav" aria-label="Main sections">{views.map(name => <a key={name} href={`#${name.toLowerCase()}`} aria-current={view === name ? 'page' : undefined}>{name}</a>)}</nav>
-    <div className={`notice ${demo ? '' : 'reference-notice'}`}><span className="notice-dot" aria-hidden="true"/><p>{demo ? <><strong>Fictional demo enabled.</strong> Vote totals and scenarios are invented. No live results.</> : <><strong>{feed.data ? isStale(feed.data,feed.error) ? 'Stale source snapshot.' : feed.data.status==='preliminary' ? 'Preliminary feed connected.' : 'Official feed connected; no published results shown.' : 'Official feed connecting or unavailable.'}</strong> Scenarios always use fictional votes.</>}</p></div>
-    <section className="hero" aria-labelledby="title"><div><p className="hero-kicker">THE 2026 GENERAL ELECTION</p><h1 id="title">{view === 'Results' ? 'New Zealand, vote by vote.' : view === 'Electorates' ? 'Your local picture.' : view === 'Parties' ? 'Every party in view.' : view === 'Coalitions' ? 'Explore the numbers together.' : view === 'Analysis' ? 'From numbers to understanding.' : 'Know what you’re reading.'}</h1><p className="hero-description">{view === 'Coalitions' ? 'Hypothetical groupings. Clear assumptions. No implied political agreements.' : 'An independent election dashboard with clear sources and honest limits.'}</p></div><p className="election-date">General election<strong>7 November 2026</strong></p></section>
+    <nav className="hub-nav" aria-label="Main sections">{views.map(name => <a key={name} href={`#${name.toLowerCase()}`} aria-current={view === name ? 'page' : undefined}><Icon name={viewIcons[name]}/>{name}</a>)}</nav>
+    <section className="hero" aria-labelledby="title"><div><h1 id="title">{view === 'Results' ? 'New Zealand, vote by vote.' : view === 'Electorates' ? 'Your local picture.' : view === 'Parties' ? 'Every party in view.' : view === 'Coalitions' ? 'Explore the numbers together.' : view === 'Analysis' ? 'From numbers to understanding.' : 'Know what you’re reading.'}</h1><p className="hero-description">{view === 'Coalitions' ? 'Hypothetical groupings. Clear assumptions. No implied political agreements.' : 'An independent election dashboard with clear sources and honest limits.'}</p></div><div className="election-date"><Icon name="calendar"/><p>General election<strong>7 November 2026</strong></p></div></section>
+    <div className={`notice ${demo ? '' : 'reference-notice'}`}><Icon name="info"/><p>{demo ? <><strong>Fictional demo enabled.</strong> Vote totals and scenarios are invented. No live results.</> : <><strong>{feed.data ? isStale(feed.data,feed.error) ? 'Stale source snapshot.' : feed.data.status==='preliminary' ? 'Preliminary feed connected.' : 'Official feed connected; no published results shown.' : 'Official feed connecting or unavailable.'}</strong> Scenarios always use fictional votes.</>}</p><a href="#sources">Sources <Icon name="arrow"/></a></div>
     <div className="hub-view" hidden={view !== 'Results'}><Overview demo={demo} setDemo={setDemo} feed={feed}/></div>
     <div className="hub-view" hidden={view !== 'Electorates'}>{demo?<Explorer demo/>:<OfficialElectorates feed={feed}/>}</div>
     <div className="hub-view" hidden={view !== 'Parties'}><OfficialParties feed={feed}/></div>

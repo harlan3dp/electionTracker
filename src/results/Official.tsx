@@ -5,6 +5,7 @@ import { useElectorate,isStale,nzTime } from './useFeed'
 import { formatNumber, parties as demoParties } from '../demo'
 import { electorates as referenceElectorates,normalizeSearch } from '../electorates'
 import { coastPaths,project } from '../geography'
+import { Icon } from '../Icons'
 export type NationalState=FeedState<Snapshot>
 export function color(name:string){
   const aliases:Record<string,string>={'act new zealand':'ACT','national party':'National','labour party':'Labour','new zealand national party':'National','new zealand labour party':'Labour','green party':'Green','green party of aotearoa new zealand':'Green','new zealand first party':'NZ First'}
@@ -12,8 +13,23 @@ export function color(name:string){
   return demoParties.find(p=>normalizeSearch(p.name)===normalizeSearch(canonical))?.color??'#64736c'
 }
 export function FeedNotice({feed}:{feed:NationalState}) {
-  const s=feed.data
-  return <div className="source-note" role="status">{s?<><strong>{isStale(s,feed.error)?'Stale snapshot · ':''}{s.message}</strong><p>Source updated {nzTime(s.updatedAt)} NZ time · Last successful check {nzTime(s.fetchedAt)} · Checks every 60 seconds while this page is visible.</p></>:<p>{feed.loading?'Connecting to the Electoral Commission feed…':feed.error??'Feed unavailable.'}</p>}{feed.error&&s&&<p>{feed.error}</p>}<button className="text-button" onClick={feed.refresh}>Retry feed</button><a href="https://www.electionresults.govt.nz/" target="_blank" rel="noreferrer">Official results website</a></div>
+  const s = feed.data
+  return <div className="feed-notice">
+    <div className="feed-message" role="status">
+      <Icon name={s && !isStale(s,feed.error) ? 'sources' : 'info'}/>
+      <div>
+        {s ? <>
+          <strong>{isStale(s,feed.error) ? 'Stale snapshot · ' : ''}{s.message}</strong>
+          <p>Source updated {nzTime(s.updatedAt)} NZ time · Last successful check {nzTime(s.fetchedAt)} · Checks every 60 seconds while this page is visible.</p>
+        </> : <p>{feed.loading ? 'Connecting to the Electoral Commission feed…' : feed.error ?? 'Feed unavailable.'}</p>}
+        {feed.error && s && <p>{feed.error}</p>}
+      </div>
+    </div>
+    <div className="feed-actions">
+      <button className="text-button" disabled={feed.loading} onClick={feed.refresh}><Icon name="refresh"/>{feed.loading ? 'Connecting…' : 'Retry feed'}</button>
+      <a href="https://www.electionresults.govt.nz/" target="_blank" rel="noreferrer">Official results website <Icon name="external"/><span className="sr-only"> (opens in a new tab)</span></a>
+    </div>
+  </div>
 }
 export function OfficialParties({feed}:{feed:NationalState}) {
   const [query,setQuery]=useState(''),[scope,setScope]=useState('all')

@@ -1,6 +1,6 @@
 ---
-name: NZ Election Tracker
-description: Next.js election-night dashboard with editorial typography, transparent source states and accessible exploration.
+name: Tally
+description: Sage and ink dashboard with explicit demonstration status and accessible election exploration.
 colors:
   ink: "#18352f"
   muted: "#506459"
@@ -16,12 +16,12 @@ colors:
 typography:
   display:
     fontFamily: "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
-    fontSize: "clamp(30px, 3.3vw, 42px)"
+    fontSize: "36px desktop / 30px mobile"
     fontWeight: 650
-    lineHeight: 1.15
+    lineHeight: 1.2
     letterSpacing: "-0.035em"
   headline:
-    fontSize: "clamp(24px, 2.5vw, 28px)"
+    fontSize: "24px desktop / 22px mobile"
     fontWeight: 650
     letterSpacing: "-0.025em"
   body:
@@ -56,11 +56,13 @@ components:
     height: "48px"
 ---
 
-# Design System: NZ Election Tracker
+# Design System: Tally
 
 ## Overview
 
 Preserve the established sage and ink identity: restrained green text, warm pale backgrounds, white panels and explicit numeric hierarchy. This is a working dashboard; a compact introduction brings the national figures and navigation into view quickly.
+
+Tally’s wordmark pairs a five-stroke tally symbol with compact sans-serif lettering. Navigation uses consistent 24-unit line icons, a pale selected surface and a persistent underline. Keep the introduction above the provenance notice; group source status and recovery actions in a single feed panel. The feed’s loading and unavailable states retain a visible explanation and official-results link. UI typography uses fixed sizes with structural breakpoint changes; shared values live in `src/styles.css` custom properties.
 
 **Key Characteristics:**
 
