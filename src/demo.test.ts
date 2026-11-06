@@ -8,13 +8,10 @@ describe('demo dashboard', () => {
     expect(parties.reduce((sum, party) => sum + voteShare(party.votes, totalVotes), 0)).toBeCloseTo(100)
     expect(voteShare(0, 0)).toBe(0)
   })
-  it('keeps the backend explicitly unavailable without publishing demo results', async () => {
+  it('redirects legacy status callers to the validated results API', () => {
     const response = onRequestGet()
-    expect(response.status).toBe(200)
-    expect(response.headers.get('Cache-Control')).toBe('public, max-age=60')
-    const body = await response.json()
-    expect(body.mode).toBe('unavailable')
-    expect(body).not.toHaveProperty('results')
-    expect(body.officialResultsUrl).toBe('https://www.electionresults.govt.nz/')
+    expect(response.status).toBe(307)
+    expect(response.headers.get('Location')).toBe('/api/results')
+    expect(response.headers.get('Cache-Control')).toBe('no-store')
   })
 })

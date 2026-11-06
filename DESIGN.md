@@ -130,3 +130,7 @@ Results default to unavailable. Fictional figures require explicit opt-in, share
 The directory contains seven Māori and eleven general historical reference entries. Separate general, Māori and combined layers. Te Tai Tonga belongs in both island filters, with one indicative South Island map anchor; markers are not boundaries. The 17 historical party names remain an unverified 2023 reference rather than a complete current register.
 
 Show three hypothetical coalition presets with the same seat allocation as the chamber. Keep source confidence, model assumptions and missing data accessible in Sources and Analysis. Preserve explicit no-data, no-match and reset states.
+
+## Official feed states
+
+Default Results, Parties, Electorates and descriptive Analysis use a shared validated media-feed snapshot. Distinguish loading, connected/waiting, withheld, preliminary, stale and unavailable. Always show source timestamps in NZ time and a route to the official site. Missing counts use “not published” or a dash, never zero support. Show candidate leads only from positive counts; never label elected winners from a feed final flag. Source directories replace historical transcriptions in normal mode; scenarios and opt-in fictional views stay clearly separate. Map anchor coverage is partial even when source list coverage is complete.
