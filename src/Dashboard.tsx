@@ -1,9 +1,9 @@
-import React from 'react'
-import { createRoot } from 'react-dom/client'
-import { Hub } from './Hub'
-import './styles.css'
+'use client'
 
-function App() {
+import React from 'react'
+import { Hub } from './Hub'
+
+export function Dashboard() {
   return <>
     <a className="skip-link" href="#main">Skip to dashboard</a>
     <header className="site-header"><div className="shell flex items-center justify-between gap-4">
@@ -15,4 +15,3 @@ function App() {
     </main>
   </>
 }
-createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>)

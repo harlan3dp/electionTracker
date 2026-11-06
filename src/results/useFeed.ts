@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { OFFICIAL_SOURCE } from './types'
 import type { Snapshot, ElectorateSnapshot } from './types'
 
@@ -21,10 +21,16 @@ function validElectorate(v:unknown,id:string):v is ElectorateSnapshot {
 export type FeedState<T> = { data:T|null; loading:boolean; error:string|null; refresh:()=>void }
 function usePolling<T extends {fetchedAt:string}>(url:string|null,validate:(value:unknown)=>value is T):FeedState<T> {
   const [data,setData]=useState<T|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState<string|null>(null),[revision,setRevision]=useState(0)
+  const previousUrl = useRef(url)
   useEffect(()=>{
     let active=true;let controller:AbortController|undefined;let busy=false
-    setData(null);setError(null);setLoading(Boolean(url))
-    if(!url)return
+    // Reset only when the resource changes; manual retry retains its last snapshot.
+    queueMicrotask(() => {
+      if (!active) return
+      if (previousUrl.current !== url) { setData(null); previousUrl.current = url }
+      setError(null); setLoading(Boolean(url))
+    })
+    if(!url)return () => { active = false }
     const load=async()=>{
       if(busy||document.hidden)return
       busy=true;controller=new AbortController()

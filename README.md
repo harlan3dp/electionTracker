@@ -1,30 +1,39 @@
 # NZ Election Tracker
 
-Independent React/TypeScript/Vite/Tailwind dashboard, deployed with Cloudflare Pages and Pages Functions. **The official media XML feed is connected.** The observed source currently contains zero counted votes, so results show an awaiting-counts state. Nonzero publication is separately gated; invented figures remain opt-in and separate.
+Independent Next.js App Router, TypeScript and Tailwind dashboard for the **New Zealand general election on 7 November 2026**, prepared for Vercel Hobby deployment. A validated adapter reads the Electoral Commission public media XML feed. Captured source data contains zero counted votes; the app shows waiting, withheld or unavailable states until publishable counts exist. No invented results are shown by default. Nonzero publication remains separately gated.
 
 ## Development
 
-Use Node 22.12+ and npm (see `.nvmrc`).
+Use Node 22.12+ and npm (see `.nvmrc`). No database, authentication or feed API key is needed.
 
 ```sh
 npm ci
-npm run dev
+npm run dev          # Next.js on port 3000
 npm test
+npm run lint
 npm run typecheck
 npm run build
-npm run preview
+npm run test:runtime # starts/stops its own production server; run after build
+npm start           # production server on port 3000
 ```
 
-Vite serves port 5173 and runs the same `/api/results` and selected-electorate handlers through a development-only middleware. Cloudflare Pages serves those handlers from `functions/` in production. `/api/status` is a legacy redirect to `/api/results`. No API key is needed for the public feed.
+In a proxy-based cloud environment use `npm run dev:proxy`, preserving inherited CA trust. Builds use webpack for compatibility with this environment. `test:runtime` verifies production HTML, route validation, legacy redirect and the API contract; an unavailable upstream response is reported distinctly from successful live access. Vitest exercises captured source XML through the actual Next.js route handlers, including cache reuse and failure handling. CI runs tests, lint, TypeScript, build and production smoke checks.
 
-In this proxy-based cloud environment use `npm run dev:proxy` (Node’s `NODE_USE_ENV_PROXY=1`, with inherited CA trust intact). On an ordinary computer, `npm run dev` suffices. Wrangler is included for `npm run dev:pages` and `npm run build:functions`. The standalone local workerd runtime does not inherit this sandbox’s outbound proxy, so it can return 503 here; this is not a successful deployed-network check. The Vite development API and live isolate test below explicitly support the inherited proxy.
+### Project structure
 
-```sh
-npm run test:runtime  # captured source fixtures; verifies the compiled Cloudflare isolate and cache
-NODE_USE_ENV_PROXY=1 node scripts/feed-runtime.cjs --live  # after build:functions; real source
-```
+- `app/`: server-rendered page, metadata, layout and Node API route handlers.
+- `src/Dashboard.tsx`, `src/Hub.tsx`: client dashboard shell and hash navigation.
+- `src/results/`: automatic polling, response validation, national dashboard and local races.
+- `lib/results/`: bounded upstream reads, XML validation, normalization and warm-instance cache.
+- `src/styles.css`: Tailwind and responsive sage/ink design system.
+- `tests/`: captured official source fixtures and adapter/route tests.
+- `scripts/smoke-next.mjs`: production HTTP smoke test with server cleanup.
 
-The runtime test uses Miniflare’s supported outbound-service bridge to preserve proxy/TLS routing for this environment. It is test-only and not deployed. CI runs fixture tests, TypeScript, Vite build and the offline isolate test. Neither a local build nor this bridge proves a public deployment.
+### API and refresh
+
+`GET /api/results` returns the validated national snapshot. `GET /api/electorates/:id` loads a selected electorate. `/api/status` redirects to `/api/results`. The browser refreshes every 60 seconds while visible; timestamps distinguish the source update and last successful retrieval. On failure it retains a clearly stale snapshot for at most ten minutes, then shows unavailable. Retry keeps the last successful snapshot while fetching.
+
+Node route handlers support Vercel without Cloudflare dependencies. A bounded in-memory cache coalesces concurrent requests and reuses snapshots for one minute per warm instance. Public responses also use short CDN caching. Cold starts, separate instances, electorate endpoints and edge locations can independently refetch; there is no global rate limiter, persistent storage or guaranteed cross-instance stale fallback. This simple design fits a small public dashboard, but monitor function usage and source load during election night. Never treat polling-place progress as the fraction of votes counted.
 
 ## Navigation and data boundaries
 
@@ -45,14 +54,14 @@ Source: `https://media.election.net.nz/xml/`. The official source homepage ident
 - `/api/electorates/:id` reads the selected `eNN/eNN.xml` only, after validating the ID against the source directory. No arbitrary upstream URL is accepted.
 - XML is validated before parsing; DTD/entities, oversized bodies, redirects, invalid IDs, duplicate or broken references, impossible dates, negative/nonfinite counts, directory-count mismatches and inconsistent percentages are rejected. Party ID 0 is kept as “No party listed in source”; list-only candidates are not shown as electorate candidates.
 - Source times are explicitly interpreted as NZDT within the supported November–December 2026 window. Other windows fail closed instead of guessing DST/year.
-- The browser refreshes every 60 seconds while visible, aborts requests after 12 seconds and offers retry. Edge snapshots refresh at most once per minute per cache location/key, coalescing concurrent reads in an isolate. HTTP/browser caching is shorter. A validated snapshot can be retained for at most ten minutes after a failed refresh, clearly stale; thereafter results are unavailable. Cache eviction or another edge location can require another upstream read; there is no global distributed rate limiter or database.
+- The browser refreshes every 60 seconds while visible, aborts requests after 12 seconds and offers retry. Server snapshots refresh at most once per minute per warm instance/key, coalescing concurrent reads. HTTP/browser caching is shorter. A validated snapshot can be retained for at most ten minutes after a failed refresh, clearly stale; thereafter results are unavailable. Cache eviction or another edge location can require another upstream read; there is no global distributed rate limiter or database.
 - Nonzero source updates older than ten minutes are labelled stale. Directory/waiting snapshots retain explicit source timestamps rather than implying zero support. Different publication settings use separate cache keys.
 
-**Production publication prerequisite:** verify Electoral Commission feed-use permission/terms, 2026 identity, that rehearsal/test data has ended, and election-day publishing requirements. Then set the non-secret Cloudflare Pages production variable `RESULTS_PUBLICATION_CONFIRMED=2026-preliminary` and redeploy. Leave it unset for previews or until review is complete. This is a manual source-confirmation guard, not proof supplied by the feed.
+**Production publication prerequisite:** verify Electoral Commission feed-use permission/terms, 2026 identity, that rehearsal/test data has ended, and election-day publishing requirements. Then set the non-secret Vercel Production environment variable `RESULTS_PUBLICATION_CONFIRMED=2026-preliminary` and redeploy. Leave it unset for previews or until review is complete. This is a manual source-confirmation guard, not proof supplied by the feed.
 
 Even with that setting, nonzero counts are withheld before `2026-11-07T19:00:00+13:00` or when the source update precedes that release time. Zero snapshots remain waiting. Both national and electorate APIs enforce this. Counts are always labelled preliminary; a future official-results adapter requires separate verification. Source seat fields and `final` flags are not used to declare winners or infer governments.
 
-Live verification performed in the cloud machine: national API plus Auckland Central and Te Tai Tonga returned validated waiting states. The observed directory had 71 electorates, 530 candidates and 36 party entries (17 registered). Browser checks covered real-source metadata at phone, tablet and desktop widths. Nonzero, withheld, invalid, failure and stale cases use explicitly synthetic test mutations, not real election results. Public deployment and production nonzero-data behaviour remain unverified.
+Earlier pre-migration live verification recorded in the repository: national API plus Auckland Central and Te Tai Tonga returned validated waiting states. The observed directory had 71 electorates, 530 candidates and 36 party entries (17 registered). Browser checks covered real-source metadata at phone, tablet and desktop widths. Nonzero, withheld, invalid, failure and stale cases use explicitly synthetic test mutations, not real election results. Current-cloud upstream access is blocked by the network allowlist; post-migration live access, public deployment and production nonzero-data behaviour remain unverified.
 
 Historical references link to `https://archive.electionresults.govt.nz/electionresults_2023/`. No poll observations or historical vote totals are loaded.
 
@@ -73,10 +82,22 @@ The remaining-vote tool solves `(target - current * countedFraction) / remaining
 
 Future forecasts need attributed/licensed polls with fieldwork dates and methods; verified historical results with boundary crosswalks; reporting-order and special-vote modelling; full MMP rules; backtesting; uncertainty intervals; model versions and input timestamps. No such forecast is currently generated.
 
-## Collaboration and deployment
+## Collaboration and Vercel deployment
 
-Use existing checkouts and feature branches; never push directly to `main`. Open PRs, run all checks and keep docs current. See `AGENTS.md` and `DESIGN.md`. CI runs tests, TypeScript and the build. Configure branch protection in GitHub.
+Use the existing checkout and one descriptive feature branch per change. Each contributor/agent should claim a small scope (for example, results UI versus data adapter), avoid editing the same files concurrently, and open a PR against the repository default branch. Never push directly to the base branch. Rebase or merge the latest base before review. All checks above must pass before merging. Do not change the data schema and its consumers in independent PRs without coordination. `AGENTS.md` contains shared rules; `DESIGN.md` documents the visual language. Configure required CI branch protection in GitHub.
 
-For Cloudflare Pages, connect this GitHub repository, set production branch `main`, build command `npm run build`, root repository directory and output `dist`. Use Node 22.12+ (set `NODE_VERSION=22` if necessary). Root `functions/` is bundled by Pages. `wrangler.jsonc` records output and compatibility date. Once configured, PRs get previews and merges to main trigger production builds. Account integration, deployment, a public URL and deployed API validation remain unverified. The repository initially had no main branch; a maintainer must establish a base before using main.
+### Deploy the waiting dashboard now
 
-Before public release, verify current facts, source reuse permissions, deployment, feed failures, data accuracy and applicable election-day publishing requirements—particularly for polling and predictive material. Do not independently publish unverified election results.
+1. Sign in to Vercel and choose **Add New → Project → Import Git Repository**, selecting `harlan3dp/electionTracker` and the branch containing this migration. An authorised account owner must connect the repository; no deployment credentials are stored here.
+2. Select **Next.js**, root directory `.`, Node **22.x**, build command `npm run build`, install command `npm ci`. Keep the framework's default output directory. Do not set `dist` and do not export a static site: live API routes need Node functions.
+3. Leave `RESULTS_PUBLICATION_CONFIRMED` unset. Deploy. Vercel provides a public `*.vercel.app` URL. A waiting/unavailable dashboard is safe to deploy while source checks are pending; this does not verify publication permission for nonzero results.
+4. At that URL verify `/`, `/api/results`, and `/api/electorates/1`. Expect 200 with a validated waiting/withheld snapshot when upstream access works, or 503 with explicit unavailable state on upstream failure. Check source timestamps, mobile layout and automatic refresh. A preview/build is not proof the deployed source network works.
+5. Once reviewed, set the desired production branch in Vercel. Use PR preview deployments for review, then merge the PR for production. Check current Vercel Hobby terms, account eligibility and free usage limits; no paid service is required by the code.
+
+### Activate nonzero results only after source review
+
+Confirm feed reuse permission, 2026 identity, rehearsal status and applicable election-day publishing requirements with the Electoral Commission. Only then set **Production** `RESULTS_PUBLICATION_CONFIRMED=2026-preliminary` and redeploy. Leave it unset in preview environments. The adapter additionally withholds nonzero counts before 7pm NZDT on 7 November 2026, or if the source timestamp precedes that release. This guard does not itself establish source authenticity or legal permission.
+
+Source-provided seats/final flags are not used to infer winners or project a government. Full MMP seat allocation, electorate qualification, overhang and official certification need separate verification. Scenarios remain explicitly fictional.
+
+Current limitations: no public deployment has been created or verified from this environment; current upstream access and GitHub API access require environment network settings. Read-only Git repository access works through the platform proxy. No application credentials are needed for the public feed. Do not enter secrets in chat.
