@@ -7,9 +7,23 @@ export type FeedCache = { match(request: Request): Promise<Response | undefined>
 type FeedValue = Snapshot | ElectorateSnapshot
 export type Dependencies = { fetcher: typeof fetch; now: () => number; cache?: FeedCache }
 const inFlight = new Map<string,Promise<FeedValue>>()
+// Warm Vercel instances share a bounded cache; cold starts can refetch.
+// CDN response caching reduces requests across instances without a database.
+const snapshots = new Map<string, { body: string; storedAt: number }>()
+const memoryCache: FeedCache = {
+  async match(request) {
+    const hit = snapshots.get(request.url)
+    if (!hit) return undefined
+    if (Date.now() - hit.storedAt > STALE_MS) { snapshots.delete(request.url); return undefined }
+    return new Response(hit.body, { headers: { 'Content-Type': 'application/json' } })
+  },
+  async put(request, response) {
+    if (snapshots.size >= 150 && !snapshots.has(request.url)) snapshots.delete(snapshots.keys().next().value!)
+    snapshots.set(request.url, { body: await response.text(), storedAt: Date.now() })
+  },
+}
 function defaults(): Dependencies {
-  const storage = globalThis.caches as CacheStorage & { default?: FeedCache } | undefined
-  return { fetcher: fetch.bind(globalThis), now: Date.now, cache: storage?.default }
+  return { fetcher: fetch.bind(globalThis), now: Date.now, cache: memoryCache }
 }
 async function xml(path: string, dependencies: Dependencies): Promise<string> {
   const response = await dependencies.fetcher(`${OFFICIAL_SOURCE}${path}`, { redirect:'manual', signal:AbortSignal.timeout(8000), headers:{Accept:'application/xml,text/xml'} })

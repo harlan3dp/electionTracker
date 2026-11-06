@@ -4,32 +4,32 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --host 0.0.0.0",
+    "dev": "next dev --hostname 0.0.0.0",
+    "dev:proxy": "NODE_USE_ENV_PROXY=1 next dev --hostname 0.0.0.0",
+    "build": "next build --webpack",
+    "start": "next start --hostname 0.0.0.0",
     "test": "vitest run",
-    "build:functions": "wrangler pages functions build --outdir .wrangler/functions",
-    "dev:pages": "npm run build && wrangler pages dev dist",
-    "dev:proxy": "NODE_USE_ENV_PROXY=1 vite --host 0.0.0.0",
-    "test:runtime": "npm run build:functions && node scripts/feed-runtime.cjs"
+    "lint": "eslint .",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test:runtime": "node scripts/smoke-next.mjs"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.3.4",
     "fast-xml-parser": "^5.12.0",
+    "next": "^16.4.5",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.0",
     "@types/node": "^24.19.2",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
-    "@vitejs/plugin-react": "^5.1.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.5",
     "tailwindcss": "^4.1.0",
     "typescript": "~5.9.3",
     "vite": "^7.2.0",
-    "vitest": "^3.2.0",
-    "wrangler": "^4.158.0"
+    "vitest": "^3.2.0"
   },
   "engines": {
     "node": ">=22.12.0"

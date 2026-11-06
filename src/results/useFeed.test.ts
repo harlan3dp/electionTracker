@@ -1,6 +1,6 @@
 import {expect,it} from 'vitest'
 import {readFileSync} from 'node:fs'
-import {normalize} from '../../functions/_lib/normalize'
+import {normalize} from '../../lib/results/normalize'
 import {validSnapshot,isStale} from './useFeed'
 const file=(name:string)=>readFileSync(new URL(`../../tests/fixtures/official-feed/${name}.xml`,import.meta.url),'utf8')
 it('validates the API envelope and never accepts published counts in a waiting state',()=>{
