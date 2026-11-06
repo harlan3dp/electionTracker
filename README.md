@@ -1,77 +1,60 @@
 # NZ Election Tracker
 
-Independent dashboard for the 7 November 2026 New Zealand General Election.
-**Stage 2: demonstration dashboard and interactive scenario tools. No live election results are connected.**
+Independent React/TypeScript/Vite/Tailwind dashboard, deployed with Cloudflare Pages and Pages Functions. **No verified live results are connected.** Results default to an honest unavailable state; invented vote totals are opt-in.
 
-## Local development
+## Development
 
-Use Node 22.12+ (see `.nvmrc`) and npm.
+Use Node 22.12+ and npm (see `.nvmrc`).
 
 ```sh
 npm ci
 npm run dev
-```
-
-Vite serves the UI on port 5173. The dashboard deliberately uses fictional figures, visibly labelled throughout. Electorate search covers an illustrative subset with synthetic candidates. Refresh and feed integration are future stages. No API keys or environment variables are required.
-
-```sh
 npm test
 npm run typecheck
 npm run build
 npm run preview
 ```
 
-Vite does not run Pages Functions. `/api/status` is a Pages Function that reports live data as unavailable and links to the official site. It never returns demonstration votes. Test it locally with `npx wrangler pages dev dist` after building (Wrangler requires a separate installation/download), or on a Cloudflare preview deployment. Unit tests exercise the handler directly.
+Vite serves port 5173; it does not execute Pages Functions. The `/api/status` handler deliberately reports live results as unavailable and is exercised by unit tests. For a local Pages runtime, build and run `npx wrangler pages dev dist` (requires a separate Wrangler installation/download). No API keys or environment variables are required for the bundled interface.
 
-## Cloudflare Pages deployment
+## Navigation and data boundaries
 
-1. Connect this GitHub repository to Cloudflare Pages using the Git integration.
-2. Set production branch to `main`, build command to `npm run build`, output directory to `dist`, and root directory to the repository root.
-3. Use Node 22.12+ for the build (set `NODE_VERSION=22` in Cloudflare if needed).
-4. Pages automatically includes the root `functions/` directory. `wrangler.jsonc` records the output directory and compatibility date.
-5. Pull requests receive preview deployments once the integration is configured. Merging to `main` triggers production deployment.
-6. Verify the dashboard labels all values as demo and `/api/status` returns `mode: unavailable` before sharing a preview.
+- **Results:** no fictional votes by default. Explicit demo toggle reveals fictional party votes.
+- **Electorates:** 11 general reference entries and seven named Māori electorate references from the 2023 roster. Search is macron-insensitive; separate General/Māori/Both roll controls avoid implying non-overlapping boundaries. Te Tai Tonga spans both islands. The island filter includes Te Tai Tonga in both islands; its map anchor remains in the South Island.
+- **Parties:** 17 names from an editorial historical 2023 party-vote reference. This is not a verified current party register or full list of 2026 candidates. Scenario selectors include every reference name; added parties have zero fictional baseline votes, which makes no claim about real support.
+- **Coalitions:** three hypothetical presets, a chamber illustration, and custom grouping controls. These do not imply political agreements or likely governments.
+- **Analysis:** current analysis is unavailable. Opt-in demo analysis computes the fictional party-vote margin and simplified seats. A target-share calculator supports every listed party.
+- **Sources:** source destinations, data limitations, and verification status. Names of 2023 elected representatives are manually entered historical references, explicitly not current MP or 2026 candidate claims. Source rechecks are pending; later by-elections, vacancies, deaths and affiliation changes are not reflected.
 
-Cloudflare account connection, project creation, a public URL, and automatic deployment require a maintainer to configure the Git integration. They have not been provisioned by this repository. No secrets belong in source control.
+Routes use hashes and support browser back/forward. Navigation retains the state of each view during a session. Demo mode is shared by Results, Electorates and Analysis, resets on a full reload, and remains explicitly labelled. Coalition calculators always use fictional data, regardless of the Results toggle.
 
-## Collaboration
+## Official data verification status
 
-Use separate feature branches and pull requests; never push directly to `main`. CI runs tests, TypeScript checks, and the production build. Enable branch protection and require CI and review in GitHub settings. See `AGENTS.md` for shared instructions.
+Initial source checks were blocked by the former restricted network policy. After environment publication on 6 November 2026, the runtime reports enforced unrestricted networking. The official results homepage and the media XML directory now return HTTP 200. The XML directory is an HTML index, not a validated result payload. The homepage links historical results through `https://archive.electionresults.govt.nz/electionresults_2023/`; the old www-hosted historical path returns 404 and has been corrected in the reference source link.
 
-The repository was initially empty, with no `main` branch. A maintainer must initialize a base branch before GitHub can accept the first pull request. The foundation is kept on a feature branch.
+Network access does not establish feed permission, current data validity or a completed adapter. Verify permissions and the actual feed schema, import the full 2026 party register, electorate roster and candidates, and distinguish current MPs from nominees. Do not replace the unavailable result state until those checks succeed. Historical reference transcriptions also require independent source checks before reliance. No poll observations or historical vote totals are loaded.
 
-## Remaining stages
+## Map provenance
 
-- Stage 2 implemented: searchable demo electorate subset, region filters, geographic map, candidate leaders, a Parliament scenario and remaining-vote target calculator. Official electorate boundaries, complete 2026 roster and real candidates still need verified sources. The map deliberately makes no electorate boundary claims.
-- Stage 3: verify access, permissions, real XML format, and update cadence for `http://media.election.net.nz/xml/`; implement a validated, cached Pages Functions adapter, refresh and loading/stale/unavailable states. No feed claims have been verified yet.
-- Stage 4: mobile/desktop testing, election data accuracy, failure testing, deployment verification, and confirmation of applicable election-day publishing requirements before public release.
-
-Official results: https://www.electionresults.govt.nz/
-
-## Analysis and visualisation scope
-
-The geographic selector uses a bundled Natural Earth coastline with approximate city-centre locations for 11 demonstration electorates, not official polygons or a complete 2026 map. Colours identify fictional leading parties; selection also works through the text list. All candidates and votes are synthetic. No winners are declared.
-
-The Parliament graphic allocates a fixed 120 seats with Sainte-Laguë divisors (1, 3, 5…). It assumes every listed party is eligible and omits electorate seats, qualification rules, overhangs and other official allocation rules. Ties use display order. Changing any selected party’s share scales the other demo parties proportionally. Coalition checkboxes express user scenarios, not political agreements. This is not a projected election result.
-
-The remaining-vote calculator solves `(target - current * countedFraction) / remainingFraction`. It assumes a known fixed final party-vote total. Reporting-place percentages are not interchangeable with that fraction. A party vote-share target is not a threshold to win or form a government.
-
-Before adding in-depth forecasts:
-
-1. Verify official 2026 electorate boundaries, roster, candidate lists, reuse permissions and provenance; include Māori electorates and handle overlapping geography.
-2. Ingest verified historical results with boundary crosswalks. Do not compare changed boundaries as though electorates were unchanged.
-3. Record poll publisher, fieldwork dates, sample, methodology, uncertainty and reuse rights; distinguish polls from counted votes.
-4. Model reporting order and special votes, implement complete MMP eligibility and seat rules, and backtest before publishing projections. Publish assumptions, source timestamps, model version and uncertainty.
-5. Define “win” explicitly: most party votes, most seats, or parliamentary support to form a government. Do not infer agreements from a user-selected grouping.
-6. Review election-day publishing requirements before public release, particularly poll and predictive material.
-
-No live forecasts, historical comparisons or poll estimates are currently produced.
-
-## Map source and interface refinements
-
-`src/data/nz-coastline.json` contains the New Zealand geometry from Natural Earth’s 1:50m Admin 0 Countries dataset (public domain):
+`src/data/nz-coastline.json` retains New Zealand geometry from Natural Earth’s public-domain 1:50m Admin 0 Countries dataset:
 https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson
 
-Downloaded 6 November 2026. Only the NZ feature geometry is retained. Rendering uses a local equirectangular projection adjusted for 41°S; the view focuses on the main islands and omits offshore islands. Coastlines and marker coordinates share the same projection. Markers are approximate city-centre positions, not official electorate centroids. This is a real geographic base map, not a boundary choropleth. Results remain fictional. No tile service, access token or runtime network request is needed.
+Downloaded 6 November 2026. Coastline and markers share an equirectangular projection adjusted for 41°S. The viewport focuses on the main islands. Offshore islands are omitted. The markers are approximate city/region anchors, not official electorate boundaries or electorate centroids. Māori anchors are deliberately shown on a separate selectable layer. No runtime tile service or access token is needed.
 
-Scenario controls support all demo parties. Selecting a party restores its demo baseline; Reset scenario also clears the selected grouping. The remaining-vote calculator updates its baseline and target when switching parties, while retaining the assumed count fraction. Party selection is independent between the two tools. Parliament dots group seats by party angularly and are accompanied by a text seat breakdown.
+## Scenario methodology
+
+The chamber illustrates a fixed 120 seats using Sainte-Laguë divisors 1, 3, 5… All listed parties are assumed eligible. Exact ties use display order. Electorate qualification, electorate wins, overhangs, vacancies and other official allocation rules are omitted. This is **not a complete NZ MMP calculator or forecast**. A 61-seat threshold applies only to this fixed chamber.
+
+Changing a party share scales all other fictional shares proportionally; every selector restores its party’s fictional baseline on change. Reset scenario restores that baseline and clears groupings. Presets and comparison rows use the same allocation function. User-selected groupings express scenarios, not agreements.
+
+The remaining-vote tool solves `(target - current * countedFraction) / remainingFraction` under a known fixed final party-vote total. Polling-place reporting percentages are not valid substitutes for that fraction. Reaching a party-vote target does not imply winning or forming a government.
+
+Future forecasts need attributed/licensed polls with fieldwork dates and methods; verified historical results with boundary crosswalks; reporting-order and special-vote modelling; full MMP rules; backtesting; uncertainty intervals; model versions and input timestamps. No such forecast is currently generated.
+
+## Collaboration and deployment
+
+Use existing checkouts and feature branches; never push directly to `main`. Open PRs, run all checks and keep docs current. See `AGENTS.md` and `DESIGN.md`. CI runs tests, TypeScript and the build. Configure branch protection in GitHub.
+
+For Cloudflare Pages, connect this GitHub repository, set production branch `main`, build command `npm run build`, root repository directory and output `dist`. Use Node 22.12+ (set `NODE_VERSION=22` if necessary). Root `functions/` is bundled by Pages. `wrangler.jsonc` records output and compatibility date. Once configured, PRs get previews and merges to main trigger production builds. Account integration, deployment, a public URL and deployed API validation remain unverified. The repository initially had no main branch; a maintainer must establish a base before using main.
+
+Before public release, verify current facts, source reuse permissions, deployment, feed failures, data accuracy and applicable election-day publishing requirements—particularly for polling and predictive material. Do not independently publish unverified election results.

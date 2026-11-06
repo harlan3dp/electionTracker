@@ -1,5 +1,5 @@
 export type Candidate = { name: string; party: string; votes: number }
-export type Electorate = { name: string; island: 'North Island' | 'South Island'; longitude: number; latitude: number; candidates: Candidate[] }
+export type Electorate = { name: string; island: 'North Island' | 'South Island'; kind?: 'Māori'; islands?: ('North Island' | 'South Island')[]; longitude: number; latitude: number; candidates: Candidate[] }
 // Approximate city-centre locations, not electorate centroids or boundaries or an official 2026 electorate roster.
 // Candidate names are deliberately synthetic; every vote is fictional.
 export const electorates: Electorate[] = [
@@ -14,10 +14,17 @@ export const electorates: Electorate[] = [
   { name: 'Christchurch Central', island: 'South Island', longitude: 172.64, latitude: -43.53, candidates: [{ name: 'Demo candidate Q', party: 'Labour', votes: 7800 }, { name: 'Demo candidate R', party: 'National', votes: 6900 }] },
   { name: 'Dunedin', island: 'South Island', longitude: 170.5, latitude: -45.87, candidates: [{ name: 'Demo candidate S', party: 'Labour', votes: 8200 }, { name: 'Demo candidate T', party: 'Green', votes: 6500 }] },
   { name: 'Invercargill', island: 'South Island', longitude: 168.35, latitude: -46.41, candidates: [{ name: 'Demo candidate U', party: 'National', votes: 7300 }, { name: 'Demo candidate V', party: 'Labour', votes: 6100 }] },
+  { name: 'Te Tai Tokerau', kind: 'Māori', island: 'North Island', longitude: 174.0, latitude: -35.8, candidates: [] },
+  { name: 'Tāmaki Makaurau', kind: 'Māori', island: 'North Island', longitude: 174.9, latitude: -36.9, candidates: [] },
+  { name: 'Hauraki-Waikato', kind: 'Māori', island: 'North Island', longitude: 175.0, latitude: -37.6, candidates: [] },
+  { name: 'Waiariki', kind: 'Māori', island: 'North Island', longitude: 176.2, latitude: -38.2, candidates: [] },
+  { name: 'Te Tai Hauāuru', kind: 'Māori', island: 'North Island', longitude: 175, latitude: -40, candidates: [] },
+  { name: 'Ikaroa-Rāwhiti', kind: 'Māori', island: 'North Island', longitude: 177.5, latitude: -38.9, candidates: [] },
+  { name: 'Te Tai Tonga', kind: 'Māori', island: 'South Island', islands: ['North Island', 'South Island'], longitude: 171.2, latitude: -43.3, candidates: [] },
 ]
 export const normalizeSearch = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
-export function searchElectorates(query: string, island = 'All') {
-  return electorates.filter(e => (island === 'All' || e.island === island) && normalizeSearch(e.name).includes(normalizeSearch(query)))
+export function searchElectorates(query: string, island = 'All', kind = 'All') {
+  return electorates.filter(e => (kind === 'All' || (e.kind ?? 'General') === kind) && (island === 'All' || (e.islands ?? [e.island]).some(region => region === island)) && normalizeSearch(e.name).includes(normalizeSearch(query)))
 }
 export function leaders(candidates: Candidate[]) {
   const sorted = [...candidates].sort((a, b) => b.votes - a.votes)
