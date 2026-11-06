@@ -6,15 +6,16 @@ import { electorates } from './electorates'
 import { allocateScenario } from './analysis'
 import { useFeed, isStale } from './results/useFeed'
 import { OfficialParties, OfficialElectorates, OfficialInsights } from './results/Official'
+import { Prediction } from './Prediction'
 import { LiveOverview } from './results/LiveOverview'
 import type { NationalState } from './results/Official'
 import { coalitionPresets, historicalSource } from './reference'
 import { Icon } from './Icons'
 import type { IconName } from './Icons'
 
-export const views = ['Results', 'Electorates', 'Parties', 'Coalitions', 'Analysis', 'Sources'] as const
+export const views = ['Results', 'Electorates', 'Parties', 'Coalitions', 'Analysis', 'Sources', 'Prediction'] as const
 export type View = typeof views[number]
-const viewIcons: Record<View, IconName> = { Results: 'results', Electorates: 'electorates', Parties: 'parties', Coalitions: 'coalitions', Analysis: 'analysis', Sources: 'sources' }
+const viewIcons: Record<View, IconName> = { Results: 'results', Electorates: 'electorates', Parties: 'parties', Coalitions: 'coalitions', Analysis: 'analysis', Sources: 'sources', Prediction: 'results' }
 const readView = (): View => views.find(view => view.toLowerCase() === window.location.hash.slice(1)) ?? 'Results'
 
 function SourceLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -60,8 +61,8 @@ export function Hub() {
   },[])
   useEffect(() => { document.title = `${view} · Tally` },[view])
   return <>
-    <nav className="hub-nav" aria-label="Main sections">{views.map(name => <a key={name} href={`#${name.toLowerCase()}`} aria-current={view === name ? 'page' : undefined}><Icon name={viewIcons[name]}/>{name}</a>)}</nav>
-    <section className="hero" aria-labelledby="title"><div><h1 id="title">{view === 'Results' ? 'New Zealand, vote by vote.' : view === 'Electorates' ? 'Your local picture.' : view === 'Parties' ? 'Every party in view.' : view === 'Coalitions' ? 'Explore the numbers together.' : view === 'Analysis' ? 'From numbers to understanding.' : 'Know what you’re reading.'}</h1><p className="hero-description">{view === 'Coalitions' ? 'Hypothetical groupings. Clear assumptions. No implied political agreements.' : 'An independent election dashboard with clear sources and honest limits.'}</p></div><div className="election-date"><Icon name="calendar"/><p>General election<strong>7 November 2026</strong></p></div></section>
+    <nav className="hub-nav" aria-label="Main sections">{views.map(name => <a key={name} href={`#${name.toLowerCase()}`} aria-current={view === name ? 'page' : undefined}><Icon name={viewIcons[name]}/>{name === 'Prediction' ? 'Make your prediction' : name}</a>)}</nav>
+    <section className="hero" aria-labelledby="title"><div><h1 id="title">{view === 'Prediction' ? 'Your call. Your Parliament.' : view === 'Results' ? 'The count. The direction. The possibilities.' : view === 'Electorates' ? 'Your local picture.' : view === 'Parties' ? 'Every party in view.' : view === 'Coalitions' ? 'Explore the numbers together.' : view === 'Analysis' ? 'From numbers to understanding.' : 'Know what you’re reading.'}</h1><p className="hero-description">{view === 'Coalitions' ? 'Hypothetical groupings. Clear assumptions. No implied political agreements.' : 'An independent election dashboard with clear sources and honest limits.'}</p></div><div className="election-date"><Icon name="calendar"/><p>General election<strong>7 November 2026</strong></p></div></section>
     <div className={`notice ${demo ? '' : 'reference-notice'}`}><Icon name="info"/><p>{demo ? <><strong>Fictional demo enabled.</strong> Vote totals and scenarios are invented. No live results.</> : <><strong>{feed.data ? isStale(feed.data,feed.error) ? 'Stale source snapshot.' : feed.data.status==='preliminary' ? 'Preliminary feed connected.' : 'Official feed connected; no published results shown.' : 'Official feed connecting or unavailable.'}</strong> Scenarios always use fictional votes.</>}</p><a href="#sources">Sources <Icon name="arrow"/></a></div>
     <div className="hub-view" hidden={view !== 'Results'}><Overview demo={demo} setDemo={setDemo} feed={feed}/></div>
     <div className="hub-view" hidden={view !== 'Electorates'}>{demo?<Explorer demo/>:<OfficialElectorates feed={feed}/>}</div>
@@ -73,5 +74,6 @@ export function Hub() {
     })}</div></div><Parliament/></div>
     <div className="hub-view" hidden={view !== 'Analysis'}>{demo?<Insights demo setDemo={setDemo}/>:<><OfficialInsights feed={feed}/><button className="text-button" onClick={()=>setDemo(true)}>Explore fictional analysis instead</button><Analysis/></>}</div>
     <div className="hub-view" hidden={view !== 'Sources'}><Sources/></div>
+    <div className="hub-view" hidden={view !== 'Prediction'}><Prediction/></div>
   </>
 }

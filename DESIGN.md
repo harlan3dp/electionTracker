@@ -140,3 +140,7 @@ Default Results, Parties, Electorates and descriptive Analysis use a shared vali
 ## Next.js national dashboard
 
 The national view uses an editorial serif headline above three source metrics and a party-vote panel. Desktop pairs this with an official-source panel and explicit seat availability; mobile stacks the panels. No decorative chart may imply missing votes or projected seats. Use dashes and waiting/unavailable copy before verified counts exist. Party bars animate on updates and respect reduced motion. Keep retrieval and source timestamps visible below the data.
+
+## Results desk and prediction builder
+
+Extend the sage-and-ink dashboard with observed count history, provisional electorate coverage and explicit seat assumptions. Separate source counts, conditional seat illustrations, personal predictions and unavailable probabilities through visible labels. The prediction editor and export preview share seven labelled party colours; saved PNGs include provenance and assumptions. Touch controls remain at least 44px, tables scroll within their panel on phones, and the prediction editor stacks above its preview. Chamber marks must exactly equal entered seats. Incomplete predictions never imply a complete parliamentary majority.
