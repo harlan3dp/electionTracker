@@ -5,6 +5,7 @@ import { useElectorate,isStale,nzTime } from './useFeed'
 import { formatNumber, parties as demoParties } from '../demo'
 import { electorates as referenceElectorates,normalizeSearch } from '../electorates'
 import { coastPaths,project } from '../geography'
+import { Icon } from '../Icons'
 export type NationalState=FeedState<Snapshot>
 export function color(name:string){
   const aliases:Record<string,string>={'act new zealand':'ACT','national party':'National','labour party':'Labour','new zealand national party':'National','new zealand labour party':'Labour','green party':'Green','green party of aotearoa new zealand':'Green','new zealand first party':'NZ First'}
@@ -12,18 +13,65 @@ export function color(name:string){
   return demoParties.find(p=>normalizeSearch(p.name)===normalizeSearch(canonical))?.color??'#64736c'
 }
 export function FeedNotice({feed}:{feed:NationalState}) {
-  const s=feed.data
-  return <div className="source-note" role="status">{s?<><strong>{isStale(s,feed.error)?'Stale snapshot · ':''}{s.message}</strong><p>Source updated {nzTime(s.updatedAt)} NZ time · Retrieved {nzTime(s.fetchedAt)} · Checks every 60 seconds while this page is visible.</p></>:<p>{feed.loading?'Connecting to the Electoral Commission feed…':feed.error??'Feed unavailable.'}</p>}{feed.error&&s&&<p>{feed.error}</p>}<button className="text-button" onClick={feed.refresh}>Retry feed</button><a href="https://www.electionresults.govt.nz/" target="_blank" rel="noreferrer">Official results website</a></div>
+  const s = feed.data
+  return <div className="feed-notice">
+    <div className="feed-message" role="status">
+      <Icon name={s && !isStale(s,feed.error) ? 'sources' : 'info'}/>
+      <div>
+        {s ? <>
+          <strong>{isStale(s,feed.error) ? 'Stale snapshot · ' : ''}{s.message}</strong>
+          <p>Source updated {nzTime(s.updatedAt)} NZ time · Retrieved {nzTime(s.fetchedAt)} · Checks every 60 seconds while this page is visible.</p>
+        </> : <p>{feed.loading ? 'Connecting to the Electoral Commission feed…' : feed.error ?? 'Feed unavailable.'}</p>}
+        {feed.error && s && <p>{feed.error}</p>}
+      </div>
+    </div>
+    <div className="feed-actions">
+      <button className="text-button" disabled={feed.loading} onClick={feed.refresh}><Icon name="refresh"/>{feed.loading ? 'Connecting…' : 'Retry feed'}</button>
+      <a href="https://www.electionresults.govt.nz/" target="_blank" rel="noreferrer">Official results website <Icon name="external"/><span className="sr-only"> (opens in a new tab)</span></a>
+    </div>
+  </div>
 }
 export function OfficialResults({feed}:{feed:NationalState}) {
-  const s=feed.data
-  return <><FeedNotice feed={feed}/>{s&&<>
-    <dl className="status-strip"><div><dt>Feed status</dt><dd>{s.status==='waiting'?'Awaiting results':s.status==='withheld'?'Figures withheld':'Preliminary'}</dd></div><div><dt>Voting places counted</dt><dd>{s.reporting?`${formatNumber(s.reporting.counted)} / ${formatNumber(s.reporting.total)} (${s.reporting.percentage.toFixed(1)}%)`:'Not published'}</dd></div><div><dt>Valid party votes</dt><dd>{s.results?formatNumber(s.results.reduce((sum,p)=>sum+p.votes,0)):'Not published'}</dd></div></dl>
-    {!s.results?<section className="waiting-room"><h3>{s.status==='waiting'?'Connected. Waiting for counted votes.':'Figures are being held for verification.'}</h3><p>The feed currently supplies directory information. Zero or withheld counts are not displayed as party support. The Electoral Commission’s homepage says preliminary results start from 7pm NZ time on 7 November 2026.</p><p>No official winners or projected seats are inferred from the feed.</p></section>:<section className="results-card"><div className="section-heading"><h3>National party vote</h3><span className="tag">PRELIMINARY{s.stale?' · STALE':''}</span></div><ul className="party-list">{[...s.results].sort((a,b)=>b.votes-a.votes).map(result=>{
-      const party=s.parties.find(p=>p.id===result.partyId)!
-      return <li key={party.id}><div className="party-row"><span className="party-name"><span className="party-dot" style={{backgroundColor:color(party.name)}}/>{party.name}</span><span className="party-numbers"><span>{formatNumber(result.votes)}</span><strong>{result.percentage.toFixed(1)}<small>%</small></strong></span></div><div className="bar-track" aria-hidden="true"><div className="bar-fill" style={{width:`${result.percentage}%`,backgroundColor:color(party.name)}}/></div></li>
-    })}</ul><p className="tiny">Percentages use valid party votes in this snapshot. Voting-place progress is not the share of all expected votes counted. Preliminary counts may change.</p></section>}
-  </>}</>
+  const s = feed.data
+  return <>
+    <FeedNotice feed={feed}/>
+    {!s && <section className="waiting-room" aria-busy={feed.loading}>
+      <div className="waiting-icon"><Icon name={feed.loading ? 'clock' : 'info'}/></div>
+      <div>
+        <h3>{feed.loading ? 'Connecting to the official feed.' : 'Live results are currently unavailable.'}</h3>
+        <p>{feed.loading ? 'Results and reporting progress will appear once a validated source snapshot is available.' : 'Try the feed again, or follow the Electoral Commission for official election results. Fictional demonstrations remain available through the demo control above.'}</p>
+        <a className="section-link" href="https://www.electionresults.govt.nz/" target="_blank" rel="noreferrer">View official election results <Icon name="external"/><span className="sr-only"> (opens in a new tab)</span></a>
+      </div>
+    </section>}
+    {s && <>
+      <dl className="status-strip">
+        <div><dt>Feed status</dt><dd>{s.status === 'waiting' ? 'Awaiting results' : s.status === 'withheld' ? 'Figures withheld' : 'Preliminary'}</dd></div>
+        <div><dt>Voting places counted</dt><dd>{s.reporting ? `${formatNumber(s.reporting.counted)} / ${formatNumber(s.reporting.total)} (${s.reporting.percentage.toFixed(1)}%)` : 'Not published'}</dd></div>
+        <div><dt>Valid party votes</dt><dd>{s.results ? formatNumber(s.results.reduce((sum,p)=>sum+p.votes,0)) : 'Not published'}</dd></div>
+      </dl>
+      {!s.results ? <section className="waiting-room">
+        <div className="waiting-icon"><Icon name="clock"/></div>
+        <div>
+          <h3>{s.status === 'waiting' ? 'Connected. Waiting for counted votes.' : 'Figures are being held for verification.'}</h3>
+          <p>The feed currently supplies directory information. Zero or withheld counts are not displayed as party support. The Electoral Commission’s homepage says preliminary results start from 7pm NZ time on 7 November 2026.</p>
+          <p>No official winners or projected seats are inferred from the feed.</p>
+        </div>
+      </section> : <section className="results-card">
+        <div className="section-heading"><h3>National party vote</h3><span className="tag">PRELIMINARY{s.stale ? ' · STALE' : ''}</span></div>
+        <ul className="party-list">{[...s.results].sort((a,b)=>b.votes-a.votes).map(result=>{
+          const party = s.parties.find(p=>p.id===result.partyId)!
+          return <li key={party.id}>
+            <div className="party-row">
+              <span className="party-name"><span className="party-dot" style={{backgroundColor:color(party.name)}}/>{party.name}</span>
+              <span className="party-numbers"><span>{formatNumber(result.votes)}</span><strong>{result.percentage.toFixed(1)}<small>%</small></strong></span>
+            </div>
+            <div className="bar-track" aria-hidden="true"><div className="bar-fill" style={{width:`${result.percentage}%`,backgroundColor:color(party.name)}}/></div>
+          </li>
+        })}</ul>
+        <p className="tiny">Percentages use valid party votes in this snapshot. Voting-place progress is not the share of all expected votes counted. Preliminary counts may change.</p>
+      </section>}
+    </>}
+  </>
 }
 export function OfficialParties({feed}:{feed:NationalState}) {
   const [query,setQuery]=useState(''),[scope,setScope]=useState('all')

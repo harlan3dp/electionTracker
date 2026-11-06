@@ -1,6 +1,8 @@
-# NZ Election Tracker
+# Tally
 
-Independent React/TypeScript/Vite/Tailwind dashboard, deployed with Cloudflare Pages and Pages Functions. **The official media XML feed is connected.** The observed source currently contains zero counted votes, so results show an awaiting-counts state. Nonzero publication is separately gated; invented figures remain opt-in and separate.
+Independent New Zealand election dashboard built with React/TypeScript/Vite/Tailwind, deployed with Cloudflare Pages and Pages Functions. **The official media XML feed is connected.** The observed source currently contains zero counted votes, so results show an awaiting-counts state. Nonzero publication is separately gated; invented figures remain opt-in and separate.
+
+Tally uses a sage-and-ink interface with a five-stroke tally mark, six directly accessible sections and a responsive mobile navigation grid. Feed provenance, retry controls and explicit loading/unavailable states sit beside the results workflow. The interface uses the local system font stack and a bundled SVG favicon, with no external font or icon requests.
 
 ## Development
 
