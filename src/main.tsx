@@ -2,6 +2,7 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { formatNumber, parties, totalVotes, voteShare } from './demo'
 import './styles.css'
+import { Explorer, Parliament, Analysis } from './Explorer'
 
 function App() {
   return <>
@@ -10,6 +11,7 @@ function App() {
       <span className="edition">GENERAL ELECTION <strong>2026</strong></span>
     </div></header>
     <main id="main" className="shell">
+      <nav className="dashboard-nav" aria-label="Dashboard sections"><a href="#main">National results</a><a href="#electorates">Electorates</a><a href="#parliament">Parliament & analysis</a></nav>
       <div className="notice"><span className="notice-dot" aria-hidden="true"/><p><strong>Demonstration mode.</strong> All figures below are fictional. Live election results are not connected.</p></div>
       <section className="hero" aria-labelledby="title"><div><p className="eyebrow">7 NOVEMBER 2026 · NEW ZEALAND</p><h1 id="title">Every vote.<br/><span>The bigger picture.</span></h1><p className="hero-description">A clear view of the election, from your electorate to the nation.</p></div><div className="hero-note"><span className="mini-label">YOUR ELECTION NIGHT COMPANION</span><p>One country.<br/>Many voices.</p><span className="leaf" aria-hidden="true">✳</span></div></section>
       <div className="section-heading"><div><p className="eyebrow">THE NATIONAL PICTURE</p><h2>Party vote</h2></div><span className="tag">DEMO DATA</span></div>
@@ -21,7 +23,9 @@ function App() {
         <aside className="space-y-5"><section className="summary-card"><p className="mini-label">DEMONSTRATION VOTES</p><p className="big-number">{formatNumber(totalVotes)}</p><p className="muted">Across the illustrative party totals</p><div className="summary-divider"/><div className="flex justify-between gap-4"><span className="muted">Reporting progress</span><strong>Unavailable</strong></div><p className="tiny">Official reporting progress and timestamps will appear when a verified feed is connected.</p></section>
         <section className="official-card"><span className="mini-label">LOOKING FOR LIVE RESULTS?</span><h3>Go straight to the source.</h3><p>This independent project is still being built. Visit the Electoral Commission for official election results.</p><a href="https://www.electionresults.govt.nz/" target="_blank" rel="noreferrer">Official results <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a></section></aside>
       </div>
-      <section className="electorate-section"><div><p className="eyebrow">CLOSER TO HOME</p><h2>Your electorate, at a glance.</h2><p>Candidate results and electorate search are coming next.</p></div><span className="coming-soon">IN DEVELOPMENT</span></section>
+      <Explorer />
+      <Parliament />
+      <Analysis />
       <footer><p><strong>Election Tracker</strong> · An independent project.</p><p>Demo only · No live results · Not affiliated with the Electoral Commission</p></footer>
     </main>
   </>
