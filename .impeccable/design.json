@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-06T00:00:00Z",
+  "title": "Design System: NZ Election Tracker",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "Deep green ink"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted green text"
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Warm paper"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "White panel"
+      },
+      "ocean": {
+        "role": "neutral",
+        "displayName": "Pale coastal sage"
+      },
+      "focus": {
+        "role": "secondary",
+        "displayName": "Keyboard focus blue"
+      }
+    },
+    "shadows": [
+      {
+        "name": "map-point",
+        "value": "0 1px 4px #18352f50",
+        "purpose": "Separate geographic markers from the coastline."
+      },
+      {
+        "name": "map-label",
+        "value": "0 2px 6px #18352f20",
+        "purpose": "Keep selected and focused labels readable over the map."
+      }
+    ],
+    "motion": [
+      {
+        "name": "map-state",
+        "value": "box-shadow .18s ease-out",
+        "purpose": "Optional marker feedback only when prefers-reduced-motion is no-preference."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "stacked",
+        "value": "700px"
+      }
+    ],
+    "accessibility": {
+      "focusOutline": "3px solid #2869ba",
+      "focusOffset": "4px",
+      "controlTarget": "44px",
+      "listRowTarget": "48px",
+      "mapAlternative": "Searchable keyboard-accessible text list",
+      "reducedMotion": "No information depends on motion."
+    },
+    "geography": {
+      "source": "Natural Earth 1:50m Admin 0 Countries",
+      "license": "Public domain",
+      "asset": "src/data/nz-coastline.json",
+      "projection": "Shared local equirectangular projection adjusted for 41\u00b0S",
+      "extent": "Main islands; offshore islands omitted",
+      "markers": "Approximate city locations, not electorate centroids or boundaries",
+      "labels": "Selected labels persist; other labels appear on hover or focus."
+    },
+    "scenarioRules": [
+      "Every demo party is selectable in each tool.",
+      "Party choices are independent between tools.",
+      "Party changes restore the relevant demo baseline.",
+      "Reset scenario restores the selected party baseline and clears grouping.",
+      "Grouping does not imply political agreement.",
+      "Keep simplified fixed-seat assumptions and hypothetical data explicit."
+    ]
+  },
+  "components": [
+    {
+      "name": "Text action",
+      "kind": "button",
+      "description": "Reset a scenario without adding visual weight.",
+      "html": "<button class=\"ds-action\">Reset scenario</button>",
+      "css": ".ds-action{min-height:44px;padding:0 8px;border:0;background:transparent;color:#285c49;font:12px Inter,system-ui,sans-serif;text-decoration:underline;text-underline-offset:4px;cursor:pointer}.ds-action:hover{color:#18352f}.ds-action:focus-visible{outline:3px solid #2869ba;outline-offset:4px}"
+    },
+    {
+      "name": "Search field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Labelled electorate search.",
+      "html": "<label class=\"ds-field\">Find an electorate<input type=\"search\" placeholder=\"Try Auckland or Whang\u0101rei\"></label>",
+      "css": ".ds-field{display:block;color:#18352f;font:600 12px Inter,system-ui,sans-serif}.ds-field input{display:block;width:100%;min-height:44px;margin-top:8px;padding:12px;border:1px solid #a8b7aa;border-radius:8px;background:white;color:#18352f;font:inherit}.ds-field input::placeholder{color:#59695e}.ds-field input:focus-visible{outline:3px solid #2869ba;outline-offset:4px}"
+    },
+    {
+      "name": "Section navigation",
+      "kind": "nav",
+      "description": "Direct links to dashboard tasks.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Dashboard sections\"><a href=\"#main\">National results</a><a href=\"#electorates\">Electorates</a></nav>",
+      "css": ".ds-nav{display:flex;flex-wrap:wrap;gap:24px;padding:18px 0;border-bottom:1px solid #dce3da;font:600 13px Inter,system-ui,sans-serif}.ds-nav a{display:flex;align-items:center;min-height:32px;color:#18352f;text-decoration:none;text-underline-offset:6px}.ds-nav a:hover{text-decoration:underline}.ds-nav a:focus-visible{outline:3px solid #2869ba;outline-offset:5px}"
+    },
+    {
+      "name": "Demo tag",
+      "kind": "chip",
+      "description": "Noninteractive provenance label.",
+      "html": "<span class=\"ds-tag\">DEMO DATA</span>",
+      "css": ".ds-tag{display:inline-block;padding:7px 10px;border-radius:4px;background:#e8eee5;color:#52694e;font:700 9px Inter,system-ui,sans-serif;letter-spacing:1.2px}"
+    },
+    {
+      "name": "Result panel",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Flat surface for related election figures.",
+      "html": "<section class=\"ds-card\"><h3>Share of the vote</h3><p>Fictional figures for interface demonstration only.</p></section>",
+      "css": ".ds-card{padding:28px;border:1px solid #dfe5dd;border-radius:12px;background:white;color:#18352f;font-family:Inter,system-ui,sans-serif}.ds-card h3{font-size:15px;font-weight:650}.ds-card p{color:#506459;font-size:12px;line-height:1.6}"
+    }
+  ],
+  "narrative": {
+    "overview": "Preserve the established sage and ink identity: restrained green text, warm pale backgrounds, white panels and explicit numeric hierarchy. This is a working dashboard; a compact introduction brings the national figures and navigation into view quickly.",
+    "keyCharacteristics": [
+      "Quiet surfaces and clear section divisions.",
+      "Party colours reserved for labelled election data.",
+      "Visible demonstration status and discoverable assumptions.",
+      "Native controls with keyboard and touch access."
+    ],
+    "rules": [
+      {
+        "name": "The Party Neutrality Rule",
+        "body": "Interface actions use the sage and ink palette. Party colours identify data; party names and numerical values carry the same information without colour.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do preserve the sage and ink palette and compact dashboard hierarchy.",
+      "Do pair colour with labels, values and visible selected states.",
+      "Do support touch, keyboard, visible focus and reduced motion.",
+      "Do label synthetic figures, candidates and scenarios as fictional or hypothetical."
+    ],
+    "donts": [
+      "Don't imply that approximate markers are electorate boundaries.",
+      "Don't describe demo leaders as winners, scenarios as forecasts, or user groupings as agreements.",
+      "Don't invent live reporting progress, timestamps, polls or predictive certainty."
+    ]
+  }
+}

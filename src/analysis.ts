@@ -20,7 +20,8 @@ export function requiredRemainingShare(currentShare: number, countedPercent: num
   if ([currentShare, countedPercent, targetShare].some(n => !Number.isFinite(n) || n < 0 || n > 100) || countedPercent === 100) return null
   return (targetShare - currentShare * countedPercent / 100) / (1 - countedPercent / 100)
 }
-export function scenarioShares(labour: number) {
-  const otherTotal = parties.filter(p => p.name !== 'Labour').reduce((sum, p) => sum + p.votes, 0)
-  return parties.map(p => p.name === 'Labour' ? labour : (100 - labour) * p.votes / otherTotal)
+export function scenarioShares(share: number, partyName: string = parties[0].name) {
+  if (!parties.some(p => p.name === partyName) || !Number.isFinite(share) || share < 0 || share > 100) throw new Error('Invalid party scenario')
+  const otherTotal = parties.filter(p => p.name !== partyName).reduce((sum, p) => sum + p.votes, 0)
+  return parties.map(p => p.name === partyName ? share : (100 - share) * p.votes / otherTotal)
 }
