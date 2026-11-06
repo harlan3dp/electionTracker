@@ -42,7 +42,7 @@ The repository was initially empty, with no `main` branch. A maintainer must ini
 
 ## Remaining stages
 
-- Stage 2 implemented: searchable demo electorate subset, region filters, geographic schematic, candidate leaders, a Parliament scenario and remaining-vote target calculator. Official electorate boundaries, complete 2026 roster and real candidates still need verified sources. The schematic deliberately makes no boundary claims.
+- Stage 2 implemented: searchable demo electorate subset, region filters, geographic map, candidate leaders, a Parliament scenario and remaining-vote target calculator. Official electorate boundaries, complete 2026 roster and real candidates still need verified sources. The map deliberately makes no electorate boundary claims.
 - Stage 3: verify access, permissions, real XML format, and update cadence for `http://media.election.net.nz/xml/`; implement a validated, cached Pages Functions adapter, refresh and loading/stale/unavailable states. No feed claims have been verified yet.
 - Stage 4: mobile/desktop testing, election data accuracy, failure testing, deployment verification, and confirmation of applicable election-day publishing requirements before public release.
 
@@ -50,11 +50,11 @@ Official results: https://www.electionresults.govt.nz/
 
 ## Analysis and visualisation scope
 
-The geographic selector uses approximate locations for 11 demonstration electorates, not official polygons or a complete 2026 map. Colours identify fictional leading parties; selection also works through the text list. All candidates and votes are synthetic. No winners are declared.
+The geographic selector uses a bundled Natural Earth coastline with approximate city-centre locations for 11 demonstration electorates, not official polygons or a complete 2026 map. Colours identify fictional leading parties; selection also works through the text list. All candidates and votes are synthetic. No winners are declared.
 
-The Parliament graphic allocates a fixed 120 seats with Sainte-Laguë divisors (1, 3, 5…). It assumes every listed party is eligible and omits electorate seats, qualification rules, overhangs and other official allocation rules. Ties use display order. Changing Labour’s share scales other demo parties proportionally. Coalition checkboxes express user scenarios, not political agreements. This is not a projected election result.
+The Parliament graphic allocates a fixed 120 seats with Sainte-Laguë divisors (1, 3, 5…). It assumes every listed party is eligible and omits electorate seats, qualification rules, overhangs and other official allocation rules. Ties use display order. Changing any selected party’s share scales the other demo parties proportionally. Coalition checkboxes express user scenarios, not political agreements. This is not a projected election result.
 
-The remaining-vote calculator solves `(target - current * countedFraction) / remainingFraction`. It assumes a known fixed final party-vote total. Reporting-place percentages are not interchangeable with that fraction. A Labour vote-share target is not a threshold to win or form a government.
+The remaining-vote calculator solves `(target - current * countedFraction) / remainingFraction`. It assumes a known fixed final party-vote total. Reporting-place percentages are not interchangeable with that fraction. A party vote-share target is not a threshold to win or form a government.
 
 Before adding in-depth forecasts:
 
@@ -66,3 +66,12 @@ Before adding in-depth forecasts:
 6. Review election-day publishing requirements before public release, particularly poll and predictive material.
 
 No live forecasts, historical comparisons or poll estimates are currently produced.
+
+## Map source and interface refinements
+
+`src/data/nz-coastline.json` contains the New Zealand geometry from Natural Earth’s 1:50m Admin 0 Countries dataset (public domain):
+https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson
+
+Downloaded 6 November 2026. Only the NZ feature geometry is retained. Rendering uses a local equirectangular projection adjusted for 41°S; the view focuses on the main islands and omits offshore islands. Coastlines and marker coordinates share the same projection. Markers are approximate city-centre positions, not official electorate centroids. This is a real geographic base map, not a boundary choropleth. Results remain fictional. No tile service, access token or runtime network request is needed.
+
+Scenario controls support all demo parties. Selecting a party restores its demo baseline; Reset scenario also clears the selected grouping. The remaining-vote calculator updates its baseline and target when switching parties, while retaining the assumed count fraction. Party selection is independent between the two tools. Parliament dots group seats by party angularly and are accompanied by a text seat breakdown.
