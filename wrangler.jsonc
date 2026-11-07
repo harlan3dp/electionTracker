@@ -3,5 +3,15 @@
   "name": "electiontracker",
   "pages_build_output_dir": "./dist",
   "compatibility_date": "2024-11-01",
-  "compatibility_flags": []
+  "compatibility_flags": [],
+  "env": {
+    "production": {
+      "vars": {
+        "RESULTS_PUBLICATION_CONFIRMED": "2026-preliminary"
+      }
+    },
+    "preview": {
+      "vars": {}
+    }
+  }
 }
