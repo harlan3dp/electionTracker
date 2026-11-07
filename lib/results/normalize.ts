@@ -59,17 +59,21 @@ export function normalize(files: XmlFiles, now: number, approved = false): Snaps
   if (Object.keys(election).some(key => /test|rehearsal/i.test(key))) fail()
   const electionStats = node(election.statistics)
   if (integer(electionStats.total_registered_parties) !== registered) fail()
-  const raw = list(node(election.partystatus), 'party').map(p => ({ partyId: id(p['@_p_no']), votes: integer(p.votes), percentage: percent(p.percent_votes) }))
+  const raw = list(node(election.partystatus), 'party').map(p => ({ partyId: id(p['@_p_no']), votes: integer(p.votes), percentage: percent(p.percent_votes), seats: { list: integer(p.party_seats), electorate: integer(p.candidate_seats), total: integer(p.total_seats) } }))
   if (raw.length !== registered || new Set(raw.map(p => p.partyId)).size !== raw.length || raw.some(p => !parties.some(d => d.id === p.partyId && d.registered))) fail()
   const totalVotes = raw.reduce((n,p) => n+p.votes,0)
   if (!Number.isSafeInteger(totalVotes) || integer(electionStats.total_votes_cast) < totalVotes) fail()
   if (raw.some(p => Math.abs(p.percentage - (totalVotes ? p.votes/totalVotes*100 : 0)) > 0.25)) fail()
-  const counted = integer(electionStats.total_voting_places_counted); const total = integer(statistics.total_voting_places); const percentage = percent(electionStats.percent_voting_places_counted)
+  const seatTotal = raw.reduce((n,p) => n+p.seats.total,0)
+  if (raw.some(p => p.seats.total !== p.seats.list+p.seats.electorate) || raw.reduce((n,p) => n+p.seats.electorate,0)>electorates.length || (seatTotal!==0 && (seatTotal<120 || seatTotal>120+electorates.length))) fail()
+  // National progress counts voting-place results across electorates, not unique
+  // physical voting places. The source supplies both inventories separately.
+  const counted = integer(electionStats.total_voting_places_counted); const total = integer(statistics.total_voting_place_results); const percentage = percent(electionStats.percent_voting_places_counted)
   if (counted > total || (counted === 0 && totalVotes > 0) || Math.abs(percentage - (total ? counted/total*100 : 0)) > 0.25) fail()
   const resultStage = stage(totalVotes, updatedAt, now, approved)
   return { schemaVersion: 1, electionYear: 2026, source: OFFICIAL_SOURCE, fetchedAt: new Date(now).toISOString(), updatedAt, ...resultStage, stale: totalVotes > 0 && now-Date.parse(updatedAt)>STALE_MS, parties, electorates, candidates,
     results: resultStage.status === 'preliminary' ? raw.map(p => ({ ...p, percentage: p.votes/totalVotes*100 })) : null,
-    reporting: resultStage.status === 'withheld' ? null : { counted, total, percentage } }
+    reporting: resultStage.status === 'withheld' ? null : { counted, total, percentage, unit: 'voting-place results' } }
 }
 export function normalizeElectorate(xml: string, snapshot: Snapshot, electorateId: string, now: number, approved = false): ElectorateSnapshot {
   const root = parse(xml,'electorate')

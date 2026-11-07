@@ -2,7 +2,7 @@ export const OFFICIAL_SOURCE = 'https://media.election.net.nz/xml/'
 export type Party = { id: string; name: string; abbreviation: string; registered: boolean }
 export type Electorate = { id: string; name: string; roll: 'General' | 'Māori' }
 export type Candidate = { id: string; name: string; partyId: string; electorateId: string | null }
-export type PartyResult = { partyId: string; votes: number; percentage: number }
+export type PartyResult = { partyId: string; votes: number; percentage: number; seats?: { list: number; electorate: number; total: number } }
 export type Snapshot = {
   schemaVersion: 1
   demoAllowed?: boolean
@@ -17,7 +17,7 @@ export type Snapshot = {
   electorates: Electorate[]
   candidates: Candidate[]
   results: PartyResult[] | null
-  reporting: { counted: number; total: number; percentage: number } | null
+  reporting: { counted: number; total: number; percentage: number; unit?: 'voting-place results' | 'voting places' } | null
 }
 export type ElectorateSnapshot = {
   schemaVersion: 1; electorateId: string; source: string; updatedAt: string; fetchedAt: string
