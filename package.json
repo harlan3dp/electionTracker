@@ -13,7 +13,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test:runtime": "node scripts/smoke-next.mjs",
     "build:next": "next build --webpack",
-    "build:pages": "vite build --config vite.pages.config.ts && wrangler pages functions build --outdir .wrangler/pages --output-routes-path dist/_routes.json --build-output-directory dist --compatibility-date 2026-11-07 && node scripts/package-pages.mjs",
+    "build:pages": "vite build --config vite.pages.config.ts && node scripts/package-pages.mjs",
     "test:pages": "node scripts/smoke-pages.mjs",
     "verify:hosted": "node scripts/verify-hosted.mjs"
   },
@@ -29,6 +29,7 @@
     "@types/node": "^24.19.2",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "esbuild": "^0.28.2",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.5",
     "tailwindcss": "^4.1.0",
