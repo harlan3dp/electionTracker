@@ -148,3 +148,7 @@ Extend the sage-and-ink dashboard with observed count history, provisional elect
 ## Summary home
 
 Keep party-vote and Parliament summaries paired above trend/change panels. Move detailed electorate tables and assumption controls into disclosures below them. Home defaults to an amber-labelled fictional replay for design review, with an always-visible demo/live switch. Never style fictional figures as current official counts or record them in live history. Preserve keyboard-accessible Play, Pause, Next update and Reset controls, touch targets and the single-column phone layout.
+
+## Election-night live states
+
+Live mode is the default. Demo is unavailable unless server status explicitly permits it, and locks on detected counts or the scheduled release cutoff. Explain the lock beside the disabled demo control, fail closed during outages, and never replace unavailable source data with fiction. Put feed provenance, last successful check, stale status and retry above the count panels. Small-screen inputs use at least 16px text to prevent focus zoom, and long party/status labels wrap within their panel.

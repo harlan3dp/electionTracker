@@ -6,12 +6,16 @@
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
     "dev:proxy": "NODE_USE_ENV_PROXY=1 next dev --hostname 0.0.0.0",
-    "build": "next build --webpack",
+    "build": "npm run build:next && npm run build:pages",
     "start": "next start --hostname 0.0.0.0",
     "test": "vitest run",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
-    "test:runtime": "node scripts/smoke-next.mjs"
+    "test:runtime": "node scripts/smoke-next.mjs",
+    "build:next": "next build --webpack",
+    "build:pages": "vite build --config vite.pages.config.ts && wrangler pages functions build --outdir .wrangler/pages --output-routes-path dist/_routes.json --build-output-directory dist --compatibility-date 2026-11-07 && node scripts/package-pages.mjs",
+    "test:pages": "node scripts/smoke-pages.mjs",
+    "verify:hosted": "node scripts/verify-hosted.mjs"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.4",
@@ -21,6 +25,7 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
     "@types/node": "^24.19.2",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
@@ -29,7 +34,8 @@
     "tailwindcss": "^4.1.0",
     "typescript": "~5.9.3",
     "vite": "^7.2.0",
-    "vitest": "^3.2.0"
+    "vitest": "^3.2.0",
+    "wrangler": "^4.158.0"
   },
   "engines": {
     "node": ">=22.12.0"

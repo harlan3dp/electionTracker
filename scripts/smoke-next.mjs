@@ -17,7 +17,7 @@ try {
   assert.ok(root?.ok, output)
   const html = await root.text()
   assert.match(html, /The count/)
-  assert.match(html, /FICTIONAL DEMO/)
+  assert.match(html, /Live results are the default/)
   const invalid = await fetch(`${base}/api/electorates/0`)
   assert.equal(invalid.status, 400)
   const redirect = await fetch(`${base}/api/status`, { redirect: 'manual' })

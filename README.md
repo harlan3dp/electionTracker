@@ -1,6 +1,6 @@
 # Tally
 
-Independent Next.js App Router, TypeScript and Tailwind dashboard for the **New Zealand general election on 7 November 2026**, prepared for Vercel Hobby deployment. A validated adapter reads the Electoral Commission public media XML feed. Captured source data contains zero counted votes; the app shows waiting, withheld or unavailable states until publishable counts exist. No invented results are shown by default. Nonzero publication remains separately gated.
+Independent Next.js App Router, TypeScript and Tailwind dashboard for the **New Zealand general election on 7 November 2026**, built for Cloudflare Pages hosting with a Next.js local/Node option. A validated adapter reads the Electoral Commission public media XML feed. Captured source data contains zero counted votes; the app shows waiting, withheld or unavailable states until publishable counts exist. No invented results are shown by default. Nonzero publication remains separately gated.
 
 Tally uses a sage-and-ink interface with a five-stroke tally mark, six directly accessible sections and a responsive mobile navigation grid. Feed provenance, retry controls and explicit loading/unavailable states sit beside the results workflow. The interface uses the local system font stack and a bundled SVG favicon, with no external font or icon requests.
 
@@ -117,3 +117,19 @@ The Prediction view is seat-first and includes National, ACT, NZ First, Labour, 
 Results now opens in **Fictional demo** mode for design review, with a persistent amber disclaimer. Six deterministic fictional updates illustrate party-share movement, electorate/list seats, overhangs and majority thresholds. Play advances every eight seconds; Pause, Next update and Reset replay give manual control. Playback stops advancing when the tab is hidden or another section is selected. The demo stops at its last frame; Play restarts it. Its 70-electorate roster is explicitly hypothetical, not a verified 2026 roster.
 
 The **Live feed** switch uses only the existing validated feed and actual observed history. Replay frames are never passed to the source adapter or written to recorded trend storage. The home mode is independent of fictional examples elsewhere in the app. Vote and Parliament summaries lead the page, trends and changes follow, and electorate details/calculators are disclosed below. Probability modelling remains unavailable. The existing personal prediction builder is unchanged.
+
+## Cloudflare Pages live build (current hosting target)
+
+The current hosted target is `https://electiontracker-40v.pages.dev/`. `npm run build` now builds both Next.js (for local/Node deployments) and a Cloudflare Pages artifact at `dist/`. Pages serves the same React dashboard using a Vite browser bundle and a compiled `_worker.js` containing the validated national/electorate handlers. It does not attempt to serve `.next/` as static files. Keep the Pages build command **npm run build**, output directory **dist**, root **repository root**, and Node **22.x**. The production branch must track this repository's actual default branch, `feat/stage-1-foundation`. Account-side settings cannot be changed by committing source; verify these in the Cloudflare dashboard before release.
+
+`npm run test:pages` rehearses the compiled Pages worker in workerd using only captured/synthetic fixtures, including positive counts after release with the review gate enabled in the test isolate. `npm run verify:hosted -- https://electiontracker-40v.pages.dev/` checks that the current Tally browser artifact and API routes are actually deployed. Successful API responses identify this release as `applicationBuild: tally-live-v2`. Unit tests cover malformed data, partial/stale responses, eligibility and overhangs. Local success is not a guarantee of hosted availability.
+
+### Live default and demo lock
+
+Home opens in Live feed mode. Replay is enabled only for a fresh server-approved waiting state before 7pm NZDT on 7 November 2026. The server and browser both disable demo at that scheduled cutoff as a fail-closed backstop for fresh devices and source resets. Any preliminary positive or withheld count also locks demo, persisting in local storage and synchronising across tabs. Storage failures disable replay. Replay never receives live data or writes to observed history. Old legacy fictional vote views are removed; personal predictions and clearly labelled assumption calculators remain separate tools.
+
+Polling refuses older source timestamps, refreshes once a minute and on tab visibility, exposes retry and stale/source timestamps above the counts, and expires retained snapshots after ten minutes even without another network response. Failed validation never falls back to fictional counts.
+
+### Required release review — not automatically activated
+
+The existing `RESULTS_PUBLICATION_CONFIRMED=2026-preliminary` gate is preserved. A Cloudflare account owner must verify official feed-use permission, actual 2026 election identity/test status and publishing requirements before setting it as a **production Pages environment variable** and redeploying. Without confirmation nonzero counts are intentionally withheld. Preview environments should leave it unset. The release-time guard remains 7pm NZDT, 7 November 2026. Source access and schema validation alone do not establish permission or election identity. If the hosted Pages build is still an older version, merging this PR and a successful Pages deployment are required before these changes reach the public URL.
