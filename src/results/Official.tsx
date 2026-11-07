@@ -1,17 +1,14 @@
+import {partyColor} from '../partyStyle'
 import { useState } from 'react'
 import type { FeedState } from './useFeed'
 import type { Snapshot } from './types'
 import { useElectorate,isStale,nzTime } from './useFeed'
-import { formatNumber, parties as demoParties } from '../demo'
+import { formatNumber } from '../demo'
 import { electorates as referenceElectorates,normalizeSearch } from '../electorates'
 import { coastPaths,project } from '../geography'
 import { Icon } from '../Icons'
 export type NationalState=FeedState<Snapshot>
-export function color(name:string){
-  const aliases:Record<string,string>={'act new zealand':'ACT','national party':'National','labour party':'Labour','new zealand national party':'National','new zealand labour party':'Labour','green party':'Green','green party of aotearoa new zealand':'Green','new zealand first party':'NZ First'}
-  const canonical=aliases[normalizeSearch(name)]??name
-  return demoParties.find(p=>normalizeSearch(p.name)===normalizeSearch(canonical))?.color??'#64736c'
-}
+export const color=partyColor
 export function FeedNotice({feed}:{feed:NationalState}) {
   const s=feed.data
   const stale=s?isStale(s,feed.error):false
