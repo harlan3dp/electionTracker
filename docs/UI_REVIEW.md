@@ -1,38 +1,57 @@
-# Tally interface review
+# Tally election-night interface review
 
-## Design read
+## Design read and scope
 
-A public election dashboard for New Zealand voters. Preserve Tally’s calm sage-and-ink identity and improve scanning, source confidence and mobile task access. This is a targeted evolution of the existing React, Tailwind and native-control design system.
+Simplify the existing election dashboard for casual voters, retaining Tally’s forest-green, cream and white identity, system typography, party colours and native controls. Use the existing React/Next.js/Tailwind structure. Taste settings: `DESIGN_VARIANCE: 3`, `MOTION_INTENSITY: 2`, `VISUAL_DENSITY: 6`.
 
-Taste settings: `DESIGN_VARIANCE: 3`, `MOTION_INTENSITY: 2`, `VISUAL_DENSITY: 6`. The interface needs predictable navigation, restrained interaction feedback and enough density to read election information quickly. Marketing-page imagery, ornamental motion and a new component framework would not help this workflow.
+The initial working tree was clean. Work started on `feat/election-night-three-tab-ui` from the latest default-branch merge of the preceding UI PR. No dependency was added. No feed adapter, validation, polling hook, publication guard, allocation algorithm, forecast method or image-export implementation is changed.
 
 ## Audit
 
-- Brand: ink `#18352f`, sage action `#285c49`, paper `#f7f8f4`, white surfaces, Inter-first system sans. Existing 12px panels, 8px controls and 4px labels are retained. Party colors remain reserved for labelled data.
-- Architecture: seven hash views, browser back/forward, retained form state and an optional prediction builder. Routes, primary navigation labels, wordmark, metadata and data policies are preserved.
-- Hierarchy: three separate home notices repeated live/demo and feed status before showing the count. Source context and recovery actions belonged in one panel.
-- Mobile: the prediction navigation item created a third navigation row. Repeated notices and a tall trend empty state delayed useful content.
-- Controls: mode buttons read as separate actions rather than a mutually exclusive choice. The 17-party custom coalition form obscured the grouping outcome.
-- Accessibility: native controls, skip link, focus rings, source links, live announcements and reduced-motion handling are preserved. Browser inspection also found server/browser floating-point differences in chamber SVG coordinates that produced hydration warnings.
+The former seven destinations separated related results from their detail. Repeated headlines, live/demo notices and feed explanations pushed election information down the page. Coalitions exposed many controls before the chamber, while an empty prediction image occupied space before any entry.
 
-## Changes
+The existing reusable pieces are retained: `Chamber`, source directories, observed trends, coverage model, scenario calculators, prediction form and PNG exporter. Predictions originally retained state only while mounted during navigation; there was no reload-persistent prediction store.
 
-The home starts with its national heading and a grouped live/demo control. Its availability explanation is linked with `aria-describedby`; the existing cutoff and fail-closed demo rules are unchanged. One source panel contains the current feed state, source and retrieval timestamps, retry action and official-results link. Stale and unavailable states have an attention border and text label.
+## Content and component map
 
-Count and Parliament empty states use the existing icon family to distinguish their purpose. The count panel gives the official-results action priority and offers a direct electorate link. Trend prerequisites occupy a compact notice.
+| Destination | Contents | Existing link compatibility |
+| --- | --- | --- |
+| Results | Concise status, national votes, next-Parliament illustration, searchable electorates | Default and `#results`; `#electorates` opens the electorate section |
+| Results details | Party directory and all shares; trends, analysis, coverage and remaining-vote tool | `#parties`, `#analysis`, `#analysis-title` open the relevant disclosures |
+| Parliament | Shared chamber, compact party totals, presets and custom coalition selection | `#parliament` and former `#coalitions` |
+| Parliament advanced | Existing seven-party MMP table and legacy share/grouping controls | `#advanced-scenarios` and former `#seat-title` |
+| Your Prediction | Seven-party seat/percentage inputs, totals, validation, partial chamber and valid sharing preview | `#prediction` |
+| Information | Existing sources, methodology and technical limitations | `#sources`, linked from footer and Results information icon |
 
-Mobile navigation uses four columns and two rows, with the prediction link spanning two columns. Small phones omit decorative navigation icons while keeping every label and 44px targets. Tablet navigation scrolls within its row rather than widening the page. Desktop navigation stays on one line.
+There are three primary navigation links, with no nested tab system. Hash navigation, browser back/forward and mounted form state remain supported. Live detail components remain mounted while the sample preview is shown so their filters are retained.
 
-Custom coalition checkboxes are behind a native disclosure with a selected-party count. Presets, allocation, reset and form persistence retain their existing behavior. SVG seat positions are serialized to three decimal places to keep server and browser markup stable without changing allocation or the number of marks.
+## Chamber and data meaning
+
+`Chamber.tsx` is the sole interactive SVG chamber renderer for source estimates, coalition exploration, advanced scenarios and predictions. Its existing `seatPoints` geometry and allocation inputs are unchanged. A selected-party mask changes dot emphasis only; identity is used rather than colour so matching colours cannot highlight an unrelated party.
+
+Results displays a chamber only when the existing coverage model supports a fresh, complete estimate. That estimate is labelled modelled and conditional, never an official allocation. The API currently has no verified official-seat allocation. Without a supported estimate, Results shows a concise empty state and draws no invented seats.
+
+Parliament uses the supported model when available. Otherwise it clearly labels the existing fictional 120-seat example in amber. Its preset totals use the displayed rows and the existing dynamic majority function. The example never enters live Results. Mobile controls repeat the selected-seat outcome and provide a direct return to the highlighted chamber.
+
+Partial personal predictions draw exactly the entered seats and retain the threshold for the intended complete chamber, including assumed overhang. The full sharing image preview appears only after both allocation and nickname are valid. The existing canvas PNG exporter, which also uses the shared seat geometry, and its content are unchanged.
+
+## Copy and mobile behavior
+
+Headlines are Election 2026, Parliament and Your Prediction. One compact source component shows status and last successful check, with diagnostics, source timestamp and retry under Feed details. The gated sample replay is a secondary disclosure with an unmistakable fictional banner and return action.
+
+In the waiting-state phone comparison, visible paragraph copy fell from 182 to 61 words before the final candidate-message shortening. Detailed methodology remains available. This measurement excludes hidden disclosures and data labels; it is not a claim about every possible feed state.
+
+The three primary links fit on one row on phones. National votes precede the chamber in reading order. Electorate map geography and advanced controls are expandable. Controls retain readable labels, visible focus and at least 44px ordinary touch targets. Existing approximate map markers retain an equivalent searchable list.
 
 ## Verification
 
-On 7 November 2026, `npm test` passed all 33 tests; lint and typecheck passed. `npm run build` produced both the Next.js and Cloudflare Pages builds.
+- 41 Vitest tests pass, including legacy-route compatibility and chamber identity highlighting, unchanged geometry, overhang thresholds and incomplete-prediction thresholds.
+- Lint, typecheck and both Next.js/Cloudflare Pages builds pass.
+- Chromium checks cover Results, Parliament, Your Prediction and Information at 320, 375, 390, 430, 768, 1024 and 1440 CSS pixels, plus six data-state layouts: 34 combinations without page overflow.
+- Axe reports no WCAG A/AA violations on the three primary destinations at 375px and 1440px. Additional scans of a valid prediction, selected coalition and the Information view also pass. Visual and keyboard review supplements this automated scan.
+- Interaction checks cover keyboard skip/focus, nine legacy routes, retry, all three coalition presets, exact 61-seat majority, unchanged chamber marks, custom selection, prediction percentage conversion, invalid totals, reset, session state retention, PNG download, electorate filtering and secondary sample preview.
+- Local fictional fixtures cover loading, waiting, unavailable, stale, withheld, preliminary and incomplete data. They never enter the live feed or observed history. Browser checks recorded no page or hydration errors.
+- The compiled Pages worker passes waiting, withheld, positive and offline fixture rehearsals. The Next.js production smoke check passes its HTML, invalid-ID, redirect and API contract checks; its upstream response was explicitly unavailable in the local runtime.
+- Read-only hosted verification against `https://tally.org.nz` passes and returns `200 waiting`. This verifies the existing public feed response, not publication permission, future nonzero results or deployment of this UI branch.
 
-Chromium checks covered all seven views at 320, 390, 768, 1024 and 1440 CSS pixels: 35 view/width combinations without page overflow. Automated axe checks reported no WCAG A/AA violations on all seven views at 320px and 1440px. These checks supplement visual and keyboard review; they do not establish a complete accessibility certification.
-
-Keyboard and interaction checks passed for the skip link, demo opt-in and replay reset, return to live mode, grouping selection/reset, back navigation, electorate search/reset, Māori roll filtering and a prediction chamber containing exactly 120 marks.
-
-Local fixture-driven browser checks covered connecting, waiting, unavailable, stale, withheld and preliminary source states and confirmed that demo remains locked when required. No page errors or hydration warnings were recorded after the coordinate fix. Test fixtures were never added to the live feed.
-
-No deployment or feed activation is part of this UI change.
+No merge, deployment, production setting change or result activation is performed by this task.

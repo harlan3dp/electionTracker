@@ -1,28 +1,15 @@
 import { useEffect, useState } from 'react'
-import { Analysis, Parliament } from './Explorer'
-import { parties } from './demo'
-import { allocateScenario } from './analysis'
-import { useFeed, isStale } from './results/useFeed'
-import { OfficialParties, OfficialElectorates, OfficialInsights } from './results/Official'
-import { Prediction } from './Prediction'
+import { useFeed } from './results/useFeed'
+import { useElectorateCoverage } from './results/ElectorateCoverage'
 import { HomeDashboard } from './results/HomeDashboard'
-import type { NationalState } from './results/Official'
-import { coalitionPresets, historicalSource } from './reference'
+import { ParliamentView } from './ParliamentView'
+import { Prediction } from './Prediction'
+import { historicalSource } from './reference'
+import { destinations, resolveRoute, type Route } from './navigation'
 import { Icon } from './Icons'
-import type { IconName } from './Icons'
-
-export const views = ['Results', 'Electorates', 'Parties', 'Coalitions', 'Analysis', 'Sources', 'Prediction'] as const
-export type View = typeof views[number]
-const viewIcons: Record<View, IconName> = { Results: 'results', Electorates: 'electorates', Parties: 'parties', Coalitions: 'coalitions', Analysis: 'analysis', Sources: 'sources', Prediction: 'results' }
-const readView = (): View => views.find(view => view.toLowerCase() === window.location.hash.slice(1)) ?? 'Results'
 
 function SourceLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return <a href={href} target="_blank" rel="noreferrer">{children} <svg viewBox="0 0 24 24" width="14" height="14" className="external-icon" aria-hidden="true"><path d="M6 18 18 6M6 6h12v12" fill="none" stroke="currentColor" strokeWidth="1.7"/></svg><span className="sr-only"> (opens in a new tab)</span></a>
-}
-
-function Overview({feed,active}:{feed:NationalState;active:boolean}) {
-  const [demo,setDemo]=useState(false)
-  return <HomeDashboard feed={feed} demo={demo} setDemo={setDemo} active={active}/>
+  return <a href={href} target="_blank" rel="noreferrer">{children} <Icon name="external"/><span className="sr-only"> (opens in a new tab)</span></a>
 }
 
 function Sources() {
@@ -31,29 +18,41 @@ function Sources() {
 
 export function Hub() {
   const feed = useFeed()
-  const [view, setView] = useState<View>('Results')
-  const demo = false
+  const model = useElectorateCoverage(feed.data)
+  const [route, setRoute] = useState<Route>(() => resolveRoute(''))
+  const titles = { results: 'Election 2026', parliament: 'Parliament', prediction: 'Your Prediction', sources: 'Sources & information' }
   useEffect(() => {
-    const change = () => { if (window.location.hash !== '#main') { setView(readView()); window.scrollTo({top:0}) } }
+    const change = () => { if (window.location.hash !== '#main') setRoute(resolveRoute(window.location.hash)) }
     change()
-    window.addEventListener('hashchange',change)
-    return () => window.removeEventListener('hashchange',change)
-  },[])
-  useEffect(() => { document.title = `${view} · Tally` },[view])
+    window.addEventListener('hashchange', change)
+    return () => window.removeEventListener('hashchange', change)
+  }, [])
+  useEffect(() => {
+    document.title = `${titles[route.destination]} · Tally`
+    const frame = requestAnimationFrame(() => {
+      if (route.detail) {
+        const target = document.getElementById(route.detail)
+        if (target instanceof HTMLDetailsElement) target.open = true
+        const legacyTarget = window.location.hash === '#analysis-title' ? document.getElementById('analysis-title') : null
+        if (legacyTarget) {
+          let parent: HTMLElement | null = legacyTarget.parentElement
+          while (parent) { if (parent instanceof HTMLDetailsElement) parent.open = true; parent = parent.parentElement }
+        }
+        ;(legacyTarget ?? target)?.scrollIntoView({ block: 'start' })
+      } else {
+        window.scrollTo({ top: 0 })
+      }
+    })
+    return () => cancelAnimationFrame(frame)
+  // Titles are static display labels.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route])
   return <>
-    <nav className="hub-nav" aria-label="Main sections">{views.map(name => <a key={name} href={`#${name.toLowerCase()}`} aria-current={view === name ? 'page' : undefined}><Icon name={viewIcons[name]}/>{name === 'Prediction' ? 'Make your prediction' : name}</a>)}</nav>
-    <section className="hero" aria-labelledby="title"><div><h1 id="title">{view === 'Prediction' ? 'Your call. Your Parliament.' : view === 'Results' ? 'The count. The direction. The possibilities.' : view === 'Electorates' ? 'Your local picture.' : view === 'Parties' ? 'Every party in view.' : view === 'Coalitions' ? 'Explore the numbers together.' : view === 'Analysis' ? 'From numbers to understanding.' : 'Know what you’re reading.'}</h1><p className="hero-description">{view === 'Coalitions' ? 'Hypothetical groupings. Clear assumptions. No implied political agreements.' : 'An independent election dashboard with clear sources and honest limits.'}</p></div><div className="election-date"><Icon name="calendar"/><p>General election<strong>7 November 2026</strong></p></div></section>
-    <div hidden={view === 'Results'} className={`notice ${demo ? '' : 'reference-notice'}`}><Icon name="info"/><p>{demo ? <><strong>Fictional demo enabled.</strong> Vote totals and scenarios are invented. No live results.</> : <><strong>{feed.data ? isStale(feed.data,feed.error) ? 'Stale source snapshot.' : feed.data.status==='preliminary' ? 'Preliminary feed connected.' : 'Official feed connected; no published results shown.' : 'Official feed connecting or unavailable.'}</strong> Scenarios always use fictional votes.</>}</p><a href="#sources">Sources <Icon name="arrow"/></a></div>
-    <div className="hub-view" hidden={view !== 'Results'}><Overview feed={feed} active={view === 'Results'}/></div>
-    <div className="hub-view" hidden={view !== 'Electorates'}><OfficialElectorates feed={feed}/></div>
-    <div className="hub-view" hidden={view !== 'Parties'}><OfficialParties feed={feed}/></div>
-    <div className="hub-view" hidden={view !== 'Coalitions'}><div className="coalition-comparisons"><h2>Three possible groupings</h2><p className="section-intro">Illustrative combinations using fictional votes. These do not assert current alliances, coalition commitments or likelihood of forming a government.</p><div className="coalition-rows">{coalitionPresets.map(preset => {
-      const allocated = allocateScenario(parties.map(p => p.votes))
-      const count = parties.reduce((sum,p,i) => sum+(preset.parties.includes(p.name) ? allocated[i] : 0),0)
-      return <div key={preset.name}><h3>{preset.name}</h3><div className="coalition-meter" aria-hidden="true"><span style={{width:`${count/120*100}%`}}/><i/></div><p><strong>{count} / 120</strong> · {count>=61 ? 'Reaches' : 'Below'} the 61-seat scenario threshold</p></div>
-    })}</div></div><Parliament/></div>
-    <div className="hub-view" hidden={view !== 'Analysis'}><OfficialInsights feed={feed}/><Analysis/></div>
-    <div className="hub-view" hidden={view !== 'Sources'}><Sources/></div>
-    <div className="hub-view" hidden={view !== 'Prediction'}><Prediction/></div>
+    <nav className="hub-nav primary-nav" aria-label="Main sections">{destinations.map(destination => <a key={destination.id} href={`#${destination.id}`} aria-current={route.destination === destination.id ? 'page' : undefined}>{destination.label}</a>)}</nav>
+    <header className="page-heading"><h1 id="title">{titles[route.destination]}</h1>{route.destination === 'results' && <a className="information-link" href="#sources"><Icon name="info"/><span>Sources & information</span></a>}</header>
+    <div className="hub-view" hidden={route.destination !== 'results'}><HomeDashboard feed={feed} model={model} detail={route.detail} active={route.destination === 'results'}/></div>
+    <div className="hub-view" hidden={route.destination !== 'parliament'}><ParliamentView feed={feed} model={model}/></div>
+    <div className="hub-view" hidden={route.destination !== 'prediction'}><Prediction/></div>
+    <div className="hub-view" hidden={route.destination !== 'sources'}><Sources/></div>
   </>
 }
