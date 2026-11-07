@@ -158,3 +158,9 @@ Keep Results, Parliament and Your Prediction as the only primary links. Retain n
 Predictions show allocated and remaining seats above the seven inputs. Partial allocations use the shared chamber with the full intended majority threshold. Show the full sharing preview only after both allocation and nickname are valid; keep image generation unchanged. Assumptions stay collapsed and entered values survive navigation.
 
 See `docs/UI_REVIEW.md` for the audit, Taste settings, component mapping and verification.
+
+## Chamber display order and party colours
+
+The chamber uses a fixed visual order from viewer-left to viewer-right: Labour, Green, Te Pāti Māori, TOP, other parties alphabetically, NZ First, ACT, National. This is a display convention, not official seating or a statement of coalition agreements. Allocate party marks along the arcs rather than vertical x-coordinate stripes. Preserve each mark's party identity for highlighting, and use the same geometry for prediction PNGs.
+
+`src/partyStyle.ts` owns colour aliases: National blue, Labour red, Green green, ACT gold, NZ First charcoal, Te Pāti Māori burgundy and TOP teal. Historical names have named display colours; new source parties get deterministic fallback colours. Labels and numbers remain the primary means of identification.

@@ -29,3 +29,12 @@ describe('shared Parliament chamber', () => {
     expect(markup).toContain('61 for a majority')
   })
 })
+
+it('puts Labour at the far left and National at the far right, preserving selected identity',()=>{
+ const known=[{name:'National Party',color:'#000',seats:48},{name:'Labour Party',color:'#000',seats:34},{name:'Green',color:'#000',seats:15},{name:'ACT',color:'#000',seats:11},{name:'NZ First',color:'#000',seats:8},{name:'Te Pāti Māori',color:'#000',seats:6}]
+ const markup=renderToStaticMarkup(createElement(Chamber,{rows:known,selectedParties:['National Party']}))
+ const marks=circles(markup)
+ expect(marks[0]).toContain('data-party="Labour Party"');expect(marks.at(-1)).toContain('data-party="National Party"')
+ expect(marks.filter(m=>m.includes('data-selected="true"'))).toHaveLength(48)
+ expect(marks.filter(m=>m.includes('fill="#2766c5"'))).toHaveLength(48)
+})
