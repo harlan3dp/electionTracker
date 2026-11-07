@@ -16,8 +16,11 @@ try {
   }
   assert.ok(root?.ok, output)
   const html = await root.text()
-  assert.match(html, /The count/)
-  assert.match(html, /Live results are the default/)
+  assert.match(html, /Election 2026/)
+  const nav = html.match(/<nav[^>]*aria-label="Main sections"[^>]*>([\s\S]*?)<\/nav>/)?.[1] ?? ''
+  assert.equal((nav.match(/<a /g) ?? []).length, 3)
+  for (const destination of ['results', 'parliament', 'prediction']) assert.match(nav, new RegExp(`href="#${destination}"`))
+  assert.match(html, /Official results/)
   const invalid = await fetch(`${base}/api/electorates/0`)
   assert.equal(invalid.status, 400)
   const redirect = await fetch(`${base}/api/status`, { redirect: 'manual' })

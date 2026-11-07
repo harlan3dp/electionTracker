@@ -16,7 +16,7 @@ colors:
 typography:
   display:
     fontFamily: "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
-    fontSize: "36px desktop / 30px mobile"
+    fontSize: "32px desktop / 28px mobile"
     fontWeight: 650
     lineHeight: 1.2
     letterSpacing: "-0.035em"
@@ -125,13 +125,11 @@ Offer every demo party in both tools. Keep each tool's party choice independent,
 
 ## Election hub navigation and provenance
 
-Use six hash-based views: Results, Electorates, Parties, Coalitions, Analysis and Sources. Preserve each view’s form state while switching; support browser back/forward. On phones, display all six navigation links in a 3×2 grid; use an inline row on desktop.
+Use three primary destinations: Results, Parliament and Your Prediction. Keep one navigation row at phone and desktop sizes. Preserve old hash links: electorates, parties and analysis open within Results; coalitions opens Parliament. Sources is an auxiliary information view reached from the footer or information icon. Form state survives navigation and browser back/forward.
 
-Results default to unavailable. Fictional figures require explicit opt-in, shared across Results, electorate demo votes and analysis insights. Coalition tools always use fictional votes. Keep provenance visible in every view; never imply that unverified historical names establish current MPs, candidates or party registration.
+Results starts with Election 2026, one concise live status and national party votes, followed immediately in reading order by the next-Parliament composition. Searchable electorates follow; party details and analysis use native disclosures. Put feed diagnostics, source timestamps and retry inside Feed details. Missing votes or seats remain unavailable, never zero or invented marks.
 
-The directory contains seven Māori and eleven general historical reference entries. Separate general, Māori and combined layers. Te Tai Tonga belongs in both island filters, with one indicative South Island map anchor; markers are not boundaries. The 17 historical party names remain an unverified 2023 reference rather than a complete current register.
-
-Show three hypothetical coalition presets with the same seat allocation as the chamber. Keep source confidence, model assumptions and missing data accessible in Sources and Analysis. Preserve explicit no-data, no-match and reset states.
+Parliament leads with the shared chamber, compact party totals and a dynamic majority threshold. Presets and custom choices highlight existing dots without reallocating seats. Show a short majority outcome beside the chamber and near mobile controls. Mathematical combinations imply no agreement. If a complete source estimate is unavailable, identify the fictional example explicitly with an amber label. Advanced sliders and the MMP table remain collapsed by default.
 
 ## Official feed states
 
@@ -139,7 +137,7 @@ Default Results, Parties, Electorates and descriptive Analysis use a shared vali
 
 ## Next.js national dashboard
 
-The national view uses an editorial serif headline above three source metrics and a party-vote panel. Desktop pairs this with an official-source panel and explicit seat availability; mobile stacks the panels. No decorative chart may imply missing votes or projected seats. Use dashes and waiting/unavailable copy before verified counts exist. Party bars animate on updates and respect reduced motion. Keep retrieval and source timestamps visible below the data.
+Use the established sans-serif type and forest-green palette. Pair party votes and the shared Parliament chamber on desktop and stack them in reading order on phones. Empty states must be concise and must not draw invented seats. The source status shows the last successful check; detailed diagnostics remain expandable. A conditional seat estimate is always labelled modelled, never official.
 
 ## Results desk and prediction builder
 
@@ -147,7 +145,7 @@ Extend the sage-and-ink dashboard with observed count history, provisional elect
 
 ## Summary home
 
-Keep party-vote and Parliament summaries paired above trend/change panels. Move detailed electorate tables and assumption controls into disclosures below them. Home defaults to an amber-labelled fictional replay for design review, with an always-visible demo/live switch. Never style fictional figures as current official counts or record them in live history. Preserve keyboard-accessible Play, Pause, Next update and Reset controls, touch targets and the single-column phone layout.
+Live results are the default. Keep the gated fictional replay under a secondary Preview with sample data disclosure. Preserve its persistent amber disclaimer, keyboard-accessible controls and separation from observed history. Group explanatory details below the immediate election story.
 
 ## Election-night live states
 
@@ -155,8 +153,8 @@ Live mode is the default. Demo is unavailable unless server status explicitly pe
 
 ## Interface refinement
 
-Consolidate the home’s live status and recovery actions into one source panel. Use explicit connecting, awaiting-counts, preliminary, withheld, stale and unavailable labels. Group the live/demo buttons in a segmented control and associate its availability explanation programmatically. Give the official-results action priority in the count empty state, with a secondary link to electorates. Trend prerequisites use a compact notice.
+Keep Results, Parliament and Your Prediction as the only primary links. Retain native controls, readable field labels, 44px targets and visible focus. Mobile coalition controls offer a compact selected-seat status and a direct return to the highlighted chamber. Advanced tools use disclosures rather than nested tabs.
 
-On phones, arrange seven navigation links in two rows of four columns; the prediction link spans two columns. Hide decorative navigation icons below 480px, retaining all labels and 44px targets. Tablet navigation may scroll within its row; desktop stays on a single line. Custom coalition options use a native disclosure with a selected-party count. Preserve selections when navigating between views.
+Predictions show allocated and remaining seats above the seven inputs. Partial allocations use the shared chamber with the full intended majority threshold. Show the full sharing preview only after both allocation and nickname are valid; keep image generation unchanged. Assumptions stay collapsed and entered values survive navigation.
 
-See `docs/UI_REVIEW.md` for the audit, Taste settings and verification.
+See `docs/UI_REVIEW.md` for the audit, Taste settings, component mapping and verification.

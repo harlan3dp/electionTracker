@@ -2,7 +2,7 @@
 
 Independent Next.js App Router, TypeScript and Tailwind dashboard for the **New Zealand general election on 7 November 2026**, built for Cloudflare Pages hosting with a Next.js local/Node option. A validated adapter reads the Electoral Commission public media XML feed. Captured source data contains zero counted votes; the app shows waiting, withheld or unavailable states until publishable counts exist. No invented results are shown by default. Nonzero publication remains separately gated.
 
-Tally uses a sage-and-ink interface with a five-stroke tally mark, seven directly accessible sections and a responsive mobile navigation grid. A grouped source-status panel keeps feed provenance, retry controls and explicit loading/unavailable states together. Optional custom coalition choices use a native disclosure with a selected-party count. The interface uses the local system font stack and a bundled SVG favicon, with no external font or icon requests. See [the UI review](docs/UI_REVIEW.md) for design decisions and browser verification.
+Tally keeps its sage-and-ink identity and shared semicircular chamber across three destinations: **Results**, **Parliament** and **Your Prediction**. Live status is concise, detailed tools are expandable, and Sources is linked from the footer. The interface uses the local system font stack and bundled icons. See [the UI review](docs/UI_REVIEW.md) for architecture, compatibility and verification.
 
 ## Development
 
@@ -39,14 +39,14 @@ Node route handlers support Vercel without Cloudflare dependencies. A bounded in
 
 ## Navigation and data boundaries
 
-- **Results:** validated source counts or waiting/withheld/unavailable/stale states. Explicit demo toggle reveals fictional party votes.
-- **Electorates:** all 71 source electorates, including seven Māori electorates, with source candidate names/affiliations and on-demand counts. The search is macron-insensitive. Map markers only cover matched reference anchors; the text list gives complete source coverage. Māori/general geography overlaps and Te Tai Tonga spans both islands. Fictional demo mode retains the older reference explorer, separate from source counts.
-- **Parties:** 36 entries from the source feed, including 17 marked registered in the observed capture. These source counts can change. Registration flags are displayed as supplied. Coalition and target-share tools retain their separate historical/demo party choices and never silently substitute source counts.
-- **Coalitions:** three hypothetical presets, a chamber illustration, and custom grouping controls. These do not imply political agreements or likely governments.
-- **Analysis:** descriptive margins from validated preliminary party counts, or an honest waiting/withheld state. No source-derived seat forecasts or win probabilities. Opt-in fictional analysis and target-share calculators remain separate.
-- **Sources:** source destinations, data limitations, and verification status. Names of 2023 elected representatives are manually entered historical references, explicitly not current MP or 2026 candidate claims. Source rechecks are pending; later by-elections, vacancies, deaths and affiliation changes are not reflected.
+- **Results (`#results`):** live status and last successful check, national party votes, the next-Parliament illustration when supported, and searchable electorate candidates. Party details and trends/analysis are expandable. A missing count is never displayed as zero. The sample replay is a secondary disclosure and retains the existing release cutoff and source-approved demo lock.
+- **Parliament (`#parliament`):** the shared semicircular chamber, compact party totals, three coalition combinations and an expandable custom builder. Selection highlights seats without reallocating them. Fresh, complete supported source counts produce an explicitly modelled composition; otherwise an amber-labelled fictional 120-seat example is used here. This example never enters live Results. Advanced scenarios retain the existing MMP table, party-share sliders and extended grouping controls.
+- **Your Prediction (`#prediction`):** the existing seven-party seat/percentage form, allocated/remaining totals, immediate validation and partial chamber. A full shareable preview requires a valid allocation and nickname. PNG export and its contents are unchanged.
+- **Sources (`#sources`):** an auxiliary information page linked from the footer and Results information icon. Source destinations, methodology and limitations remain accessible.
 
-Routes use hashes and support browser back/forward. Navigation retains the state of each view during a session. Demo mode is shared by Results, Electorates and Analysis, resets on a full reload, and remains explicitly labelled. Coalition calculators always use fictional data, regardless of the Results toggle.
+Legacy `#electorates`, `#parties` and `#analysis` links open their sections in Results; `#coalitions` opens Parliament. Embedded calculator links (`#analysis-title`, `#seat-title`) remain supported. Hash navigation supports browser back/forward and preserves mounted form state. Prediction inputs were session-only before this change and remain so; there is no reload-persistent prediction store. Observed trend history retains its existing session-storage behavior.
+
+The source directory includes all 71 electorates (seven Māori), with macron-insensitive search and neutral approximate map anchors under **Map & coverage**. Party registration flags come from the source. Historical reference names remain restricted to the existing hypothetical tools and information; they are not current MP claims.
 
 ## Official feed connection and activation
 
@@ -76,7 +76,7 @@ Downloaded 6 November 2026. Coastline and markers share an equirectangular proje
 
 ## Scenario methodology
 
-The chamber illustrates a fixed 120 seats using Sainte-Laguë divisors 1, 3, 5… All listed parties are assumed eligible. Exact ties use display order. Electorate qualification, electorate wins, overhangs, vacancies and other official allocation rules are omitted. This is **not a complete NZ MMP calculator or forecast**. A 61-seat threshold applies only to this fixed chamber.
+The fictional coalition baseline and legacy party-share tool illustrate a fixed 120 seats using Sainte-Laguë divisors 1, 3, 5… All listed parties are assumed eligible. Exact ties use display order. Electorate qualification, electorate wins, overhangs, vacancies and other official allocation rules are omitted. This is **not a complete NZ MMP calculator or forecast**. A 61-seat threshold applies only to this fixed chamber.
 
 Changing a party share scales all other fictional shares proportionally; every selector restores its party’s fictional baseline on change. Reset scenario restores that baseline and clears groupings. Presets and comparison rows use the same allocation function. User-selected groupings express scenarios, not agreements.
 
@@ -108,15 +108,15 @@ Current limitations: no public deployment has been created or verified from this
 
 The Results view records up to 180 distinct preliminary source updates in this browser tab's session storage, with a trend chart and percentage-point changes. It never reconstructs history from the current total. Clearing history removes this tab's stored trend data. Storage restrictions may prevent history surviving reloads.
 
-When preliminary national counts exist, electorate counts refresh in batches of four through the existing validated routes. Partial, stale, missing and tied counts are shown explicitly. An automatic illustrative electorate/list allocation is available only when all source electorates have fresh positive untied leads and all leader affiliations are supported registered parties. It treats current shares and leads as assumptions, never certified seats. Unsupported independent/unregistered outcomes keep it unavailable. The separate seven-party Parliament calculator supports 5%/electorate eligibility, Sainte-Laguë allocation, overhangs and dynamic majority thresholds. It excludes unlisted parties, independents and exceptional statutory rules; it is not a certified full election model. Probability panels remain “Model not yet available”.
+When preliminary national counts exist, electorate counts refresh in batches of four through the existing validated routes. Partial, stale, missing and tied counts are shown explicitly. An automatic illustrative electorate/list allocation is available only when all source electorates have fresh positive untied leads and all leader affiliations are supported registered parties. It treats current shares and leads as assumptions, never certified seats. Unsupported independent/unregistered outcomes keep it unavailable. The separate seven-party Parliament calculator supports 5%/electorate eligibility, Sainte-Laguë allocation, overhangs and dynamic majority thresholds. It excludes unlisted parties, independents and exceptional statutory rules; it is not a certified full election model. No winning probability or government outcome is inferred.
 
 The Prediction view is seat-first and includes National, ACT, NZ First, Labour, Green, Te Pāti Māori and TOP only. Percentage mode estimates one party's seats from a user-entered eligible vote pool and electorate floor; it does not perform a joint allocation. The displayed reverse percentage is a proxy, not an inverse MMP calculation. Direct seats stay exact. Users must allocate 120 seats plus their explicitly assumed overhang, and seats cannot fall below the entered electorate floor. Nicknames, dates, input units, assumptions, a chamber, totals and majority are exported as a local PNG. There are no accounts, uploads or automatic scoring. The existing Results publication gate is unchanged.
 
 ## Summary homepage and fictional replay
 
-Results now opens in **Fictional demo** mode for design review, with a persistent amber disclaimer. Six deterministic fictional updates illustrate party-share movement, electorate/list seats, overhangs and majority thresholds. Play advances every eight seconds; Pause, Next update and Reset replay give manual control. Playback stops advancing when the tab is hidden or another section is selected. The demo stops at its last frame; Play restarts it. Its 70-electorate roster is explicitly hypothetical, not a verified 2026 roster.
+Results opens in **live** mode. **Preview with sample data** is a secondary disclosure; it never competes with live results as a primary tab or switch. A fresh, server-approved waiting state before the existing cutoff is still required. An unmistakable amber banner and return-to-live action accompany all fictional frames.
 
-The **Live feed** switch uses only the existing validated feed and actual observed history. Replay frames are never passed to the source adapter or written to recorded trend storage. The home mode is independent of fictional examples elsewhere in the app. Vote and Parliament summaries lead the page, trends and changes follow, and electorate details/calculators are disclosed below. Probability modelling remains unavailable. The existing personal prediction builder is unchanged.
+The six deterministic replay updates, Play/Pause/Next/Reset controls, visibility handling and fictional 70-electorate assumptions are unchanged. Replay frames never enter the feed or observed trend storage. Advanced Parliament assumptions are accessed from Parliament rather than duplicated inside the replay.
 
 ## Cloudflare Pages live build (current hosting target)
 
