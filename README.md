@@ -2,7 +2,7 @@
 
 Independent Next.js App Router, TypeScript and Tailwind dashboard for the **New Zealand general election on 7 November 2026**, built for Cloudflare Pages hosting with a Next.js local/Node option. A validated adapter reads the Electoral Commission public media XML feed. Captured source data contains zero counted votes; the app shows waiting, withheld or unavailable states until publishable counts exist. No invented results are shown by default. Nonzero publication remains separately gated.
 
-Tally uses a sage-and-ink interface with a five-stroke tally mark, six directly accessible sections and a responsive mobile navigation grid. Feed provenance, retry controls and explicit loading/unavailable states sit beside the results workflow. The interface uses the local system font stack and a bundled SVG favicon, with no external font or icon requests.
+Tally uses a sage-and-ink interface with a five-stroke tally mark, seven directly accessible sections and a responsive mobile navigation grid. A grouped source-status panel keeps feed provenance, retry controls and explicit loading/unavailable states together. Optional custom coalition choices use a native disclosure with a selected-party count. The interface uses the local system font stack and a bundled SVG favicon, with no external font or icon requests. See [the UI review](docs/UI_REVIEW.md) for design decisions and browser verification.
 
 ## Development
 
