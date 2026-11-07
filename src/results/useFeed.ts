@@ -15,6 +15,12 @@ export function validSnapshot(v:unknown):v is Snapshot {
   if(!Array.isArray(v.candidates)||!v.candidates.every(c=>object(c)&&str(c.id)&&str(c.name)&&str(c.partyId)&&(c.electorateId===null||str(c.electorateId))))return false
   if(Date.parse(String(v.fetchedAt))>Date.now()+300000||Date.parse(String(v.updatedAt))>Date.now()+300000)return false
   if(new Set(v.parties.map(p=>p.id)).size!==v.parties.length||new Set(v.electorates.map(e=>e.id)).size!==v.electorates.length||new Set(v.candidates.map(c=>c.id)).size!==v.candidates.length)return false
+  if(Array.isArray(v.results)&&v.results.some(p=>object(p)&&p.seats!==undefined)){
+    const seats=v.results.map(p=>object(p)?p.seats:null)
+    if(!seats.every(s=>object(s)&&[s.list,s.electorate,s.total].every(n=>num(n)&&Number.isSafeInteger(n))&&s.total===Number(s.list)+Number(s.electorate)))return false
+    const total=seats.reduce<number>((n,s)=>n+Number((s as Record<string,unknown>).total),0)
+    if((total!==0&&(total<120||total>120+v.electorates.length))||seats.reduce<number>((n,s)=>n+Number((s as Record<string,unknown>).electorate),0)>v.electorates.length)return false
+  }
   return v.status==='preliminary' ? Array.isArray(v.results)&&v.results.length>0&&v.results.every(p=>object(p)&&str(p.partyId)&&num(p.votes)&&Number.isSafeInteger(p.votes)&&num(p.percentage)&&p.percentage<=100&&v.parties instanceof Array&&v.parties.some(d=>d.id===p.partyId))&&new Set(v.results.map(p=>p.partyId)).size===v.results.length&&v.results.reduce((n,p)=>n+Number(p.votes),0)>0&&Number.isSafeInteger(v.results.reduce((n,p)=>n+Number(p.votes),0))&&Math.abs(v.results.reduce((n,p)=>n+Number(p.percentage),0)-100)<0.3 : v.results===null
 }
 export function validElectorate(v:unknown,id:string):v is ElectorateSnapshot {

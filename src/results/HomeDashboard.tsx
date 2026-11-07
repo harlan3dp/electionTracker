@@ -4,7 +4,7 @@ import {Chamber} from '../Chamber'
 import {predictionParties} from '../parliament'
 import {Trends} from './Trends'
 import {ElectorateCoverage} from './ElectorateCoverage'
-import {ParliamentComposition,modelledRows,type ParliamentModel} from '../ParliamentComposition'
+import {ParliamentComposition,modelledRows,sourceSeatRows,type ParliamentModel} from '../ParliamentComposition'
 import {OfficialElectorates,OfficialParties,OfficialInsights} from './Official'
 import {Analysis} from '../Explorer'
 import type {Detail} from '../navigation'
@@ -14,10 +14,10 @@ import {demoAvailable,resultsStarted,DEMO_LOCK_KEY} from './demoPolicy'
 import {replayFrames} from './replay'
 
 function Probability(){return <p className="probability-note"><strong>Probabilities: Model not yet available.</strong> No chance of forming a government is inferred from these seats.</p>}
-function VoteBars({rows,label}:{rows:{name:string;share:number;color:string}[];label:string}) {
+function VoteBars({rows,label,emptyTitle='Awaiting party votes',emptyMessage='Official counts will appear here.'}:{rows:{name:string;share:number;color:string}[];label:string;emptyTitle?:string;emptyMessage?:string}) {
  return <section className="desk-panel national-results"><div className="section-heading"><h2>National results</h2><span className="tag">{label}</span></div>
   {rows.length ? <ul className="desk-votes">{rows.map(row => <li key={row.name}><div className="party-row"><span className="party-name"><span className="party-dot" style={{background:row.color}}/>{row.name}</span><strong>{row.share.toFixed(1)}%</strong></div><div className="bar-track" aria-hidden="true"><div className="bar-fill" style={{width:`${row.share}%`,background:row.color}}/></div></li>)}</ul>
-  : <div className="brief-empty"><Icon name="results"/><h3>Awaiting party votes</h3><p>Official counts will appear here.</p></div>}
+  : <div className="brief-empty"><Icon name="results"/><h3>{emptyTitle}</h3><p>{emptyMessage}</p></div>}
  </section>
 }
 export function HomeDashboard({feed,model,detail,active}:{feed:NationalState;model:ParliamentModel;detail:Detail;active:boolean}) {
@@ -48,11 +48,12 @@ function LiveDesk({feed,model}:{feed:NationalState;model:ParliamentModel}) {
  const results=s?.results?[...s.results].sort((a,b)=>b.votes-a.votes):[]
  const rows=results.map(result=>{const party=s!.parties.find(p=>p.id===result.partyId)!;return{name:party.name,share:result.percentage,color:color(party.name)}})
  const fresh = s && !isStale(s,feed.error)
- const composition=fresh?modelledRows(model):null
+ const sourceRows=fresh?sourceSeatRows(s):null
+ const composition=sourceRows??(fresh?modelledRows(model):null)
  return <>
   <FeedNotice feed={feed}/>
-  <div className="desk-summary election-summary"><VoteBars label={rows.length?'Preliminary party vote':'Party vote'} rows={rows.slice(0,7)}/>
-   <ParliamentComposition rows={composition}><p className="tiny model-caveat">If current shares and leads held. Not an official seat allocation.</p><a className="section-link" href="#parliament">Explore coalitions <Icon name="arrow"/></a></ParliamentComposition>
+  <div className="desk-summary election-summary"><VoteBars label={rows.length?'Preliminary party vote':'Party vote'} rows={rows.slice(0,7)} emptyTitle={s?.status==='withheld'?'Results withheld':!s&&!feed.loading?'Party votes unavailable':'Awaiting party votes'} emptyMessage={s?.status==='withheld'?s.message:!s&&!feed.loading?'The feed could not be loaded. Retry the feed or check the official results website.':'Official counts will appear here.'}/>
+   <ParliamentComposition rows={composition} label={sourceRows?'Preliminary source seats':'Modelled seats'}><p className="tiny model-caveat">{sourceRows?'Seat calculation supplied by the official feed. Provisional, not elected seats; includes electorate and list seats.':'If current shares and leads held. Not an official seat allocation.'}</p><a className="section-link" href="#parliament">Explore coalitions <Icon name="arrow"/></a></ParliamentComposition>
   </div>
   <div className="result-detail-links"><a href="#electorates">Find an electorate <Icon name="arrow"/></a><a href="#parties">Party details</a><a href="#analysis">Trends & analysis</a></div>
   <section id="electorates" className="results-local"><OfficialElectorates feed={feed} compact/></section>

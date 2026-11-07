@@ -129,7 +129,7 @@ Use three primary destinations: Results, Parliament and Your Prediction. Keep on
 
 Results starts with Election 2026, one concise live status and national party votes, followed immediately in reading order by the next-Parliament composition. Searchable electorates follow; party details and analysis use native disclosures. Put feed diagnostics, source timestamps and retry inside Feed details. Missing votes or seats remain unavailable, never zero or invented marks.
 
-Parliament leads with the shared chamber, compact party totals and a dynamic majority threshold. Presets and custom choices highlight existing dots without reallocating seats. Show a short majority outcome beside the chamber and near mobile controls. Mathematical combinations imply no agreement. If a complete source estimate is unavailable, identify the fictional example explicitly with an amber label. Advanced sliders and the MMP table remain collapsed by default.
+Parliament leads with the shared chamber, compact party totals and a dynamic majority threshold. Presets and custom choices highlight existing dots without reallocating seats. Show a short majority outcome beside the chamber and near mobile controls. Mathematical combinations imply no agreement. Use validated preliminary source seat totals as soon as they are available. If a fresh seat calculation is unavailable, show an empty state and feed status; never substitute a fictional chamber. Advanced sliders and the MMP table remain collapsed by default.
 
 ## Official feed states
 
@@ -137,7 +137,7 @@ Default Results, Parties, Electorates and descriptive Analysis use a shared vali
 
 ## Next.js national dashboard
 
-Use the established sans-serif type and forest-green palette. Pair party votes and the shared Parliament chamber on desktop and stack them in reading order on phones. Empty states must be concise and must not draw invented seats. The source status shows the last successful check; detailed diagnostics remain expandable. A conditional seat estimate is always labelled modelled, never official.
+Use the established sans-serif type and forest-green palette. Pair party votes and the shared Parliament chamber on desktop and stack them in reading order on phones. Empty states must be concise and must not draw invented seats. The source status shows the last successful check; detailed diagnostics remain expandable. Source-supplied seat calculations are labelled preliminary source seats, not elected MPs. A separate conditional seat estimate is always labelled modelled, never official.
 
 ## Results desk and prediction builder
 
