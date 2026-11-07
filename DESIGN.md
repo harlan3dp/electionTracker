@@ -152,3 +152,11 @@ Keep party-vote and Parliament summaries paired above trend/change panels. Move 
 ## Election-night live states
 
 Live mode is the default. Demo is unavailable unless server status explicitly permits it, and locks on detected counts or the scheduled release cutoff. Explain the lock beside the disabled demo control, fail closed during outages, and never replace unavailable source data with fiction. Put feed provenance, last successful check, stale status and retry above the count panels. Small-screen inputs use at least 16px text to prevent focus zoom, and long party/status labels wrap within their panel.
+
+## Interface refinement
+
+Consolidate the home’s live status and recovery actions into one source panel. Use explicit connecting, awaiting-counts, preliminary, withheld, stale and unavailable labels. Group the live/demo buttons in a segmented control and associate its availability explanation programmatically. Give the official-results action priority in the count empty state, with a secondary link to electorates. Trend prerequisites use a compact notice.
+
+On phones, arrange seven navigation links in two rows of four columns; the prediction link spans two columns. Hide decorative navigation icons below 480px, retaining all labels and 44px targets. Tablet navigation may scroll within its row; desktop stays on a single line. Custom coalition options use a native disclosure with a selected-party count. Preserve selections when navigating between views.
+
+See `docs/UI_REVIEW.md` for the audit, Taste settings and verification.

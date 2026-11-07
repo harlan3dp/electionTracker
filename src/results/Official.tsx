@@ -14,7 +14,10 @@ export function color(name:string){
 }
 export function FeedNotice({feed}:{feed:NationalState}) {
   const s = feed.data
-  return <div className="feed-notice">
+  const stale = s ? isStale(s, feed.error) : false
+  const state = s ? stale ? 'Stale snapshot' : s.status === 'preliminary' ? 'Preliminary counts' : s.status === 'withheld' ? 'Figures withheld' : 'Awaiting counts' : feed.loading ? 'Connecting' : 'Unavailable'
+  return <div className={`feed-notice ${stale || (!s && !feed.loading) ? 'feed-attention' : ''}`} aria-busy={feed.loading}>
+    <div className="feed-heading"><span><Icon name="sources"/>Official source</span><span className="tag">{state}</span></div>
     <div className="feed-message" role="status">
       <Icon name={s && !isStale(s,feed.error) ? 'sources' : 'info'}/>
       <div>
@@ -27,7 +30,7 @@ export function FeedNotice({feed}:{feed:NationalState}) {
     </div>
     <div className="feed-actions">
       <button className="text-button" disabled={feed.loading} onClick={feed.refresh}><Icon name="refresh"/>{feed.loading ? 'Connecting…' : 'Retry feed'}</button>
-      <a href="https://www.electionresults.govt.nz/" target="_blank" rel="noreferrer">Official results website <Icon name="external"/><span className="sr-only"> (opens in a new tab)</span></a>
+      <a className="official-source-link" href="https://www.electionresults.govt.nz/" target="_blank" rel="noreferrer">Official results website <Icon name="external"/><span className="sr-only"> (opens in a new tab)</span></a>
     </div>
   </div>
 }
