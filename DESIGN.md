@@ -144,3 +144,7 @@ The national view uses an editorial serif headline above three source metrics an
 ## Results desk and prediction builder
 
 Extend the sage-and-ink dashboard with observed count history, provisional electorate coverage and explicit seat assumptions. Separate source counts, conditional seat illustrations, personal predictions and unavailable probabilities through visible labels. The prediction editor and export preview share seven labelled party colours; saved PNGs include provenance and assumptions. Touch controls remain at least 44px, tables scroll within their panel on phones, and the prediction editor stacks above its preview. Chamber marks must exactly equal entered seats. Incomplete predictions never imply a complete parliamentary majority.
+
+## Summary home
+
+Keep party-vote and Parliament summaries paired above trend/change panels. Move detailed electorate tables and assumption controls into disclosures below them. Home defaults to an amber-labelled fictional replay for design review, with an always-visible demo/live switch. Never style fictional figures as current official counts or record them in live history. Preserve keyboard-accessible Play, Pause, Next update and Reset controls, touch targets and the single-column phone layout.

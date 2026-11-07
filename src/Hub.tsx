@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Analysis, Explorer, Parliament } from './Explorer'
-import { DemoResults } from './DemoResults'
 import { parties, formatNumber, voteShare, totalVotes } from './demo'
 import { electorates } from './electorates'
 import { allocateScenario } from './analysis'
 import { useFeed, isStale } from './results/useFeed'
 import { OfficialParties, OfficialElectorates, OfficialInsights } from './results/Official'
 import { Prediction } from './Prediction'
-import { LiveOverview } from './results/LiveOverview'
+import { HomeDashboard } from './results/HomeDashboard'
 import type { NationalState } from './results/Official'
 import { coalitionPresets, historicalSource } from './reference'
 import { Icon } from './Icons'
@@ -22,12 +21,9 @@ function SourceLink({ href, children }: { href: string; children: React.ReactNod
   return <a href={href} target="_blank" rel="noreferrer">{children} <svg viewBox="0 0 24 24" width="14" height="14" className="external-icon" aria-hidden="true"><path d="M6 18 18 6M6 6h12v12" fill="none" stroke="currentColor" strokeWidth="1.7"/></svg><span className="sr-only"> (opens in a new tab)</span></a>
 }
 
-function Overview({ demo, setDemo, feed }: { demo: boolean; setDemo: (value: boolean) => void; feed: NationalState }) {
-  return <>
-    <div className="results-toolbar"><div><h2>National picture</h2><p>Party vote, seats and reporting progress</p></div><label className="demo-toggle"><input type="checkbox" checked={demo} onChange={e => setDemo(e.target.checked)}/>Show fictional demo</label></div>
-    {demo ? <DemoResults/> : <LiveOverview feed={feed}/>}
-    <div className="reading-grid"><section><h3>Find your local race</h3><p>General and Māori electorates have separate rolls and overlapping geography. Search both, and distinguish a historical representative from a current candidate.</p><a href="#electorates">Explore electorates →</a></section><section><h3>Understand the route to government</h3><p>A party’s vote share is not a winning threshold. Explore possible groupings in a hypothetical 120-seat Parliament.</p><a href="#coalitions">Open coalition scenarios →</a></section></div>
-  </>
+function Overview({feed,active}:{feed:NationalState;active:boolean}) {
+  const [demo,setDemo]=useState(true)
+  return <HomeDashboard feed={feed} demo={demo} setDemo={setDemo} active={active}/>
 }
 
 function Insights({ demo, setDemo }: { demo: boolean; setDemo: (value: boolean) => void }) {
@@ -63,8 +59,8 @@ export function Hub() {
   return <>
     <nav className="hub-nav" aria-label="Main sections">{views.map(name => <a key={name} href={`#${name.toLowerCase()}`} aria-current={view === name ? 'page' : undefined}><Icon name={viewIcons[name]}/>{name === 'Prediction' ? 'Make your prediction' : name}</a>)}</nav>
     <section className="hero" aria-labelledby="title"><div><h1 id="title">{view === 'Prediction' ? 'Your call. Your Parliament.' : view === 'Results' ? 'The count. The direction. The possibilities.' : view === 'Electorates' ? 'Your local picture.' : view === 'Parties' ? 'Every party in view.' : view === 'Coalitions' ? 'Explore the numbers together.' : view === 'Analysis' ? 'From numbers to understanding.' : 'Know what you’re reading.'}</h1><p className="hero-description">{view === 'Coalitions' ? 'Hypothetical groupings. Clear assumptions. No implied political agreements.' : 'An independent election dashboard with clear sources and honest limits.'}</p></div><div className="election-date"><Icon name="calendar"/><p>General election<strong>7 November 2026</strong></p></div></section>
-    <div className={`notice ${demo ? '' : 'reference-notice'}`}><Icon name="info"/><p>{demo ? <><strong>Fictional demo enabled.</strong> Vote totals and scenarios are invented. No live results.</> : <><strong>{feed.data ? isStale(feed.data,feed.error) ? 'Stale source snapshot.' : feed.data.status==='preliminary' ? 'Preliminary feed connected.' : 'Official feed connected; no published results shown.' : 'Official feed connecting or unavailable.'}</strong> Scenarios always use fictional votes.</>}</p><a href="#sources">Sources <Icon name="arrow"/></a></div>
-    <div className="hub-view" hidden={view !== 'Results'}><Overview demo={demo} setDemo={setDemo} feed={feed}/></div>
+    <div hidden={view === 'Results'} className={`notice ${demo ? '' : 'reference-notice'}`}><Icon name="info"/><p>{demo ? <><strong>Fictional demo enabled.</strong> Vote totals and scenarios are invented. No live results.</> : <><strong>{feed.data ? isStale(feed.data,feed.error) ? 'Stale source snapshot.' : feed.data.status==='preliminary' ? 'Preliminary feed connected.' : 'Official feed connected; no published results shown.' : 'Official feed connecting or unavailable.'}</strong> Scenarios always use fictional votes.</>}</p><a href="#sources">Sources <Icon name="arrow"/></a></div>
+    <div className="hub-view" hidden={view !== 'Results'}><Overview feed={feed} active={view === 'Results'}/></div>
     <div className="hub-view" hidden={view !== 'Electorates'}>{demo?<Explorer demo/>:<OfficialElectorates feed={feed}/>}</div>
     <div className="hub-view" hidden={view !== 'Parties'}><OfficialParties feed={feed}/></div>
     <div className="hub-view" hidden={view !== 'Coalitions'}><div className="coalition-comparisons"><h2>Three possible groupings</h2><p className="section-intro">Illustrative combinations using fictional votes. These do not assert current alliances, coalition commitments or likelihood of forming a government.</p><div className="coalition-rows">{coalitionPresets.map(preset => {
