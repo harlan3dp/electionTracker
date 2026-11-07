@@ -11,3 +11,10 @@ it('validates the API envelope and never accepts published counts in a waiting s
   expect(validSnapshot({...s,parties:[]})).toBe(false)
   expect(isStale(s,'Source failed')).toBe(true)
 })
+it('rejects future snapshots, duplicate IDs and inconsistent preliminary totals',()=>{
+ const s=normalize({election:file('election'),statistics:file('statistics'),parties:file('parties'),electorates:file('electorates'),candidates:file('candidates')},Date.parse('2026-11-06T18:00:00+13:00'))
+ expect(validSnapshot({...s,fetchedAt:new Date(Date.now()+3600000).toISOString()})).toBe(false)
+ expect(validSnapshot({...s,parties:[...s.parties,s.parties[0]]})).toBe(false)
+ expect(validSnapshot({...s,status:'preliminary',results:[{partyId:s.parties[0].id,votes:10,percentage:30}]})).toBe(false)
+ expect(validSnapshot({...s,status:'preliminary',results:[{partyId:s.parties[0].id,votes:0,percentage:100}]})).toBe(false)
+})

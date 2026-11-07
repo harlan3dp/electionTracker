@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Analysis, Explorer, Parliament } from './Explorer'
-import { parties, formatNumber, voteShare, totalVotes } from './demo'
-import { electorates } from './electorates'
+import { Analysis, Parliament } from './Explorer'
+import { parties } from './demo'
 import { allocateScenario } from './analysis'
 import { useFeed, isStale } from './results/useFeed'
 import { OfficialParties, OfficialElectorates, OfficialInsights } from './results/Official'
@@ -22,23 +21,8 @@ function SourceLink({ href, children }: { href: string; children: React.ReactNod
 }
 
 function Overview({feed,active}:{feed:NationalState;active:boolean}) {
-  const [demo,setDemo]=useState(true)
+  const [demo,setDemo]=useState(false)
   return <HomeDashboard feed={feed} demo={demo} setDemo={setDemo} active={active}/>
-}
-
-function Insights({ demo, setDemo }: { demo: boolean; setDemo: (value: boolean) => void }) {
-  const ordered = [...parties].sort((a,b) => b.votes-a.votes)
-  const gap = ordered[0].votes - ordered[1].votes
-  const seats = allocateScenario(parties.map(p => p.votes))
-  const maoriCount = electorates.filter(e => e.kind === 'Māori').length
-  return <>
-    <section className="insights-section"><div className="section-heading"><h2>What the data can tell us</h2><span className="tag">{demo ? 'FICTIONAL DEMO' : 'CURRENT DATA UNAVAILABLE'}</span></div>
-      <p className="section-intro">Start with the evidence, then the interpretation. Polls, historical vote totals and live results are not verified or loaded. There is no supported 2026 forecast or win probability.</p>
-      {!demo ? <div className="analysis-empty"><h3>No current result analysis yet</h3><p>Without verified counts, we cannot identify a national leader, calculate swing, estimate remaining votes or project seats. Use the explicitly fictional walkthrough to see how these summaries will read.</p><button className="primary-button" onClick={() => setDemo(true)}>Explore fictional analysis</button></div> : <><dl className="status-strip"><div><dt>Demo party-vote leader</dt><dd>{ordered[0].name}</dd></div><div><dt>Demo margin over second</dt><dd>{formatNumber(gap)} votes</dd></div><div><dt>Demo percentage-point gap</dt><dd>{(voteShare(gap,totalVotes)).toFixed(1)} pp</dd></div></dl><p className="analysis-answer">{ordered[0].name} leads the fictional party vote, but receives {seats[parties.findIndex(p => p.name === ordered[0].name)]} seats in the simplified allocation—short of the 61-seat scenario majority.</p><p className="tiny">Computed directly from fictional votes; not a poll, prediction or report of actual voting.</p><button className="text-button" onClick={() => setDemo(false)}>Leave fictional analysis</button></>}
-      <h3 className="subheading">Coverage at a glance</h3><dl className="coverage-list"><div><dt>Māori electorate names</dt><dd>{maoriCount} historical reference entries; current roster recheck pending</dd></div><div><dt>General electorate names</dt><dd>{electorates.length-maoriCount} reference entries; incomplete coverage</dd></div><div><dt>Representatives</dt><dd>2023 election-winner references only; no verified current MPs or 2026 candidates</dd></div><div><dt>Party coverage</dt><dd>17 historical reference names; current register unverified</dd></div></dl>
-      <div className="reading-grid"><section><h3>Reporting order matters</h3><p>Early counts may overrepresent particular places or voting methods. A national percentage can move as different electorates and special votes arrive. Polling places reporting is not the share of all votes counted.</p></section><section><h3>Two votes, different jobs</h3><p>The party vote drives proportional representation. The electorate vote chooses a local representative. A local candidate lead cannot be treated as a national party-vote lead.</p></section></div>
-    </section><Analysis/>
-  </>
 }
 
 function Sources() {
@@ -48,7 +32,7 @@ function Sources() {
 export function Hub() {
   const feed = useFeed()
   const [view, setView] = useState<View>('Results')
-  const [demo, setDemo] = useState(false)
+  const demo = false
   useEffect(() => {
     const change = () => { if (window.location.hash !== '#main') { setView(readView()); window.scrollTo({top:0}) } }
     change()
@@ -61,14 +45,14 @@ export function Hub() {
     <section className="hero" aria-labelledby="title"><div><h1 id="title">{view === 'Prediction' ? 'Your call. Your Parliament.' : view === 'Results' ? 'The count. The direction. The possibilities.' : view === 'Electorates' ? 'Your local picture.' : view === 'Parties' ? 'Every party in view.' : view === 'Coalitions' ? 'Explore the numbers together.' : view === 'Analysis' ? 'From numbers to understanding.' : 'Know what you’re reading.'}</h1><p className="hero-description">{view === 'Coalitions' ? 'Hypothetical groupings. Clear assumptions. No implied political agreements.' : 'An independent election dashboard with clear sources and honest limits.'}</p></div><div className="election-date"><Icon name="calendar"/><p>General election<strong>7 November 2026</strong></p></div></section>
     <div hidden={view === 'Results'} className={`notice ${demo ? '' : 'reference-notice'}`}><Icon name="info"/><p>{demo ? <><strong>Fictional demo enabled.</strong> Vote totals and scenarios are invented. No live results.</> : <><strong>{feed.data ? isStale(feed.data,feed.error) ? 'Stale source snapshot.' : feed.data.status==='preliminary' ? 'Preliminary feed connected.' : 'Official feed connected; no published results shown.' : 'Official feed connecting or unavailable.'}</strong> Scenarios always use fictional votes.</>}</p><a href="#sources">Sources <Icon name="arrow"/></a></div>
     <div className="hub-view" hidden={view !== 'Results'}><Overview feed={feed} active={view === 'Results'}/></div>
-    <div className="hub-view" hidden={view !== 'Electorates'}>{demo?<Explorer demo/>:<OfficialElectorates feed={feed}/>}</div>
+    <div className="hub-view" hidden={view !== 'Electorates'}><OfficialElectorates feed={feed}/></div>
     <div className="hub-view" hidden={view !== 'Parties'}><OfficialParties feed={feed}/></div>
     <div className="hub-view" hidden={view !== 'Coalitions'}><div className="coalition-comparisons"><h2>Three possible groupings</h2><p className="section-intro">Illustrative combinations using fictional votes. These do not assert current alliances, coalition commitments or likelihood of forming a government.</p><div className="coalition-rows">{coalitionPresets.map(preset => {
       const allocated = allocateScenario(parties.map(p => p.votes))
       const count = parties.reduce((sum,p,i) => sum+(preset.parties.includes(p.name) ? allocated[i] : 0),0)
       return <div key={preset.name}><h3>{preset.name}</h3><div className="coalition-meter" aria-hidden="true"><span style={{width:`${count/120*100}%`}}/><i/></div><p><strong>{count} / 120</strong> · {count>=61 ? 'Reaches' : 'Below'} the 61-seat scenario threshold</p></div>
     })}</div></div><Parliament/></div>
-    <div className="hub-view" hidden={view !== 'Analysis'}>{demo?<Insights demo setDemo={setDemo}/>:<><OfficialInsights feed={feed}/><button className="text-button" onClick={()=>setDemo(true)}>Explore fictional analysis instead</button><Analysis/></>}</div>
+    <div className="hub-view" hidden={view !== 'Analysis'}><OfficialInsights feed={feed}/><Analysis/></div>
     <div className="hub-view" hidden={view !== 'Sources'}><Sources/></div>
     <div className="hub-view" hidden={view !== 'Prediction'}><Prediction/></div>
   </>

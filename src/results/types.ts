@@ -5,6 +5,7 @@ export type Candidate = { id: string; name: string; partyId: string; electorateI
 export type PartyResult = { partyId: string; votes: number; percentage: number }
 export type Snapshot = {
   schemaVersion: 1
+  demoAllowed?: boolean
   electionYear: 2026
   source: typeof OFFICIAL_SOURCE
   fetchedAt: string

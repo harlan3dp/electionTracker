@@ -13,21 +13,26 @@ export function validSnapshot(v:unknown):v is Snapshot {
   if(!Array.isArray(v.parties)||!v.parties.length||!v.parties.every(p=>object(p)&&str(p.id)&&str(p.name)&&str(p.abbreviation)&&typeof p.registered==='boolean'))return false
   if(!Array.isArray(v.electorates)||!v.electorates.length||!v.electorates.every(e=>object(e)&&str(e.id)&&str(e.name)&&['General','Māori'].includes(String(e.roll))))return false
   if(!Array.isArray(v.candidates)||!v.candidates.every(c=>object(c)&&str(c.id)&&str(c.name)&&str(c.partyId)&&(c.electorateId===null||str(c.electorateId))))return false
-  return v.status==='preliminary' ? Array.isArray(v.results)&&v.results.length>0&&v.results.every(p=>object(p)&&str(p.partyId)&&num(p.votes)&&Number.isSafeInteger(p.votes)&&num(p.percentage)&&p.percentage<=100&&v.parties instanceof Array&&v.parties.some(d=>d.id===p.partyId)) : v.results===null
+  if(Date.parse(String(v.fetchedAt))>Date.now()+300000||Date.parse(String(v.updatedAt))>Date.now()+300000)return false
+  if(new Set(v.parties.map(p=>p.id)).size!==v.parties.length||new Set(v.electorates.map(e=>e.id)).size!==v.electorates.length||new Set(v.candidates.map(c=>c.id)).size!==v.candidates.length)return false
+  return v.status==='preliminary' ? Array.isArray(v.results)&&v.results.length>0&&v.results.every(p=>object(p)&&str(p.partyId)&&num(p.votes)&&Number.isSafeInteger(p.votes)&&num(p.percentage)&&p.percentage<=100&&v.parties instanceof Array&&v.parties.some(d=>d.id===p.partyId))&&new Set(v.results.map(p=>p.partyId)).size===v.results.length&&v.results.reduce((n,p)=>n+Number(p.votes),0)>0&&Number.isSafeInteger(v.results.reduce((n,p)=>n+Number(p.votes),0))&&Math.abs(v.results.reduce((n,p)=>n+Number(p.percentage),0)-100)<0.3 : v.results===null
 }
 export function validElectorate(v:unknown,id:string):v is ElectorateSnapshot {
   return object(v)&&v.schemaVersion===1&&v.electorateId===id&&v.source===`${OFFICIAL_SOURCE}e${id.padStart(2,'0')}/e${id.padStart(2,'0')}.xml`&&date(v.fetchedAt)&&date(v.updatedAt)&&stages.includes(String(v.status))&&typeof v.stale==='boolean'&&str(v.message)&&reporting(v.reporting)&&(v.status==='preliminary'?Array.isArray(v.candidates)&&v.candidates.every(c=>object(c)&&str(c.candidateId)&&num(c.votes)&&Number.isSafeInteger(c.votes)):v.candidates===null)
 }
 export type FeedState<T> = { data:T|null; loading:boolean; error:string|null; refresh:()=>void }
-function usePolling<T extends {fetchedAt:string}>(url:string|null,validate:(value:unknown)=>value is T):FeedState<T> {
+function usePolling<T extends {fetchedAt:string;updatedAt:string}>(url:string|null,validate:(value:unknown)=>value is T):FeedState<T> {
   const [data,setData]=useState<T|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState<string|null>(null),[revision,setRevision]=useState(0)
   const previousUrl = useRef(url)
+  const latestSource=useRef({url,time:0})
+  const [now,tick]=useState(0)
+  useEffect(()=>{queueMicrotask(()=>tick(Date.now()));const timer=setInterval(()=>tick(Date.now()),15000);return()=>clearInterval(timer)},[])
   useEffect(()=>{
     let active=true;let controller:AbortController|undefined;let busy=false
     // Reset only when the resource changes; manual retry retains its last snapshot.
     queueMicrotask(() => {
       if (!active) return
-      if (previousUrl.current !== url) { setData(null); previousUrl.current = url }
+      if (previousUrl.current !== url) { setData(null); previousUrl.current = url;latestSource.current={url,time:0} }
       setError(null); setLoading(Boolean(url))
     })
     if(!url)return () => { active = false }
@@ -40,7 +45,8 @@ function usePolling<T extends {fetchedAt:string}>(url:string|null,validate:(valu
         if(!response.ok)throw new Error('Feed unavailable')
         const value:unknown=await response.json()
         if(!validate(value))throw new Error('Invalid API response')
-        if(active){setData(value);setError(null)}
+        if(Date.parse(value.updatedAt)<latestSource.current.time)throw new Error('Older source snapshot')
+        if(active){latestSource.current={url,time:Date.parse(value.updatedAt)};setData(value);setError(null)}
       }catch{
         if(active){setError('The official feed could not be refreshed. Retry or use the official results website.');setData(previous=>previous&&Date.now()-Date.parse(previous.fetchedAt)<=10*60_000?previous:null)}
       }finally{clearTimeout(timeout);busy=false;if(active)setLoading(false)}
@@ -52,7 +58,7 @@ function usePolling<T extends {fetchedAt:string}>(url:string|null,validate:(valu
   // Validation functions are stable module-level functions or captured by URL.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[url,revision])
-  return {data,loading,error,refresh:()=>setRevision(r=>r+1)}
+  return {data:data&&now-Date.parse(data.fetchedAt)<=10*60_000?data:null,loading,error,refresh:()=>setRevision(r=>r+1)}
 }
 export function useFeed() { return usePolling<Snapshot>('/api/results',validSnapshot) }
 export function useElectorate(id:string|null) { return usePolling<ElectorateSnapshot>(id?`/api/electorates/${id}`:null,(v):v is ElectorateSnapshot=>id!==null&&validElectorate(v,id)) }

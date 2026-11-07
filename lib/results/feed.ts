@@ -75,8 +75,8 @@ export function getElectorate(id: string, env:FeedEnv, dependencies=defaults()):
   },dependencies)
 }
 export function unavailable() {
-  return Response.json({schemaVersion:1,status:'unavailable',source:OFFICIAL_SOURCE,message:'The official feed is unavailable or failed validation. No unverified results are shown.'},{status:503,headers:{'Cache-Control':'no-store'}})
+  return Response.json({schemaVersion:1,status:'unavailable',applicationBuild:'tally-live-v2',demoAllowed:false,source:OFFICIAL_SOURCE,message:'The official feed is unavailable or failed validation. No unverified results are shown.'},{status:503,headers:{'Cache-Control':'no-store'}})
 }
 export function json(value:FeedValue) {
-  return Response.json(value,{headers:{'Cache-Control':value.stale?'no-store':'public, max-age=15, s-maxage=30','X-Content-Type-Options':'nosniff'}})
+  return Response.json({...value,demoAllowed:value.status==='waiting'&&!value.stale&&Date.now()<Date.parse('2026-11-07T19:00:00+13:00'),applicationBuild:'tally-live-v2'},{headers:{'Cache-Control':value.stale?'no-store':'public, max-age=15, s-maxage=30','X-Content-Type-Options':'nosniff'}})
 }

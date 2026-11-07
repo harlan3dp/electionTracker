@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@source "./";
+@source "../cloudflare";
 
 @theme { --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
 
@@ -486,3 +488,8 @@ footer strong { color: var(--ink); font-size: 15px; font-weight: 700; letter-spa
 .results-desk .trend-panel >button { justify-self:start; }
 .results-desk .trend-panel .trend-chart { align-self:center; }
 @media(max-width:700px) { .results-desk .trend-panel { grid-template-columns:1fr; }.results-desk .trend-panel .seat-table { font-size:12px; } }
+/* Election-night resilience: provenance and recovery stay above the count. */
+.live-default-notice { padding:12px 16px; margin-bottom:20px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--muted); font-size:13px; line-height:1.75; }
+.desk-mode button:disabled { cursor:not-allowed; background:#edf0ea; color:var(--muted); border-color:var(--line); }
+.desk-votes .party-name,.desk-seat-totals,.feed-message { overflow-wrap:anywhere; }
+@media(max-width:700px) { input[type='number'],input[type='search'],select { font-size:16px!important; }.live-default-notice { font-size:13px; } }
