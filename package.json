@@ -13,7 +13,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test:runtime": "node scripts/smoke-next.mjs",
     "build:next": "next build --webpack",
-    "build:pages": "vite build --config vite.pages.config.ts && wrangler pages functions build --outdir dist/_worker.js --output-routes-path dist/_routes.json --build-output-directory dist --compatibility-date 2026-11-07",
+    "build:pages": "vite build --config vite.pages.config.ts && wrangler pages functions build --outdir .wrangler/pages --output-routes-path dist/_routes.json --build-output-directory dist --compatibility-date 2026-11-07 && node scripts/package-pages.mjs",
     "test:pages": "node scripts/smoke-pages.mjs",
     "verify:hosted": "node scripts/verify-hosted.mjs"
   },
